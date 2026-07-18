@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlockCodigo API - Libre Código</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--terracotta:#C96B4B;--amber:#F0B429;--white:#FFFFFF;--soft-gray:#F5F5F5;--dark:#222222;--terracotta-light:#e8936f;--terracotta-dark:#a8553a;--amber-light:#f5cc6a;--code-bg:#1e1e2e;--code-text:#cdd6f4;--sidebar-w:280px;--block-event:#C96B4B;--block-stack:#5B8DEF;--block-reporter:#43B581;--block-boolean:#F0B429;--block-c:#9B59B6}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{font-family:'Inter',sans-serif;color:var(--dark);background:var(--white);line-height:1.7}
+::selection{background:var(--terracotta);color:var(--white)}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--soft-gray);border-right:1px solid #e0e0e0;overflow-y:auto;z-index:100;padding:0;transition:transform .3s ease}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:10px}
+.sidebar-header .logo{width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sidebar-header .logo img{width:100%;height:100%;object-fit:contain}
+.sidebar-header h2{font-size:15px;font-weight:700;color:var(--dark)}
+.sidebar-header .version{font-size:11px;font-weight:500;color:var(--amber);background:rgba(240,180,41,.15);padding:2px 8px;border-radius:20px;margin-left:auto}
+.sidebar nav{padding:12px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13.5px;color:#555;text-decoration:none;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.sidebar nav a:hover{color:var(--terracotta);background:rgba(201,107,75,.06)}
+.sidebar nav a.active{color:var(--terracotta);background:rgba(201,107,75,.08);border-left-color:var(--terracotta);font-weight:600}
+.sidebar nav a i{width:18px;height:18px;flex-shrink:0}
+.sidebar-nav-group{padding:0 20px;margin-top:16px;margin-bottom:4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#999}
+
+/* Topbar */
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:64px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:1px solid #e8e8e8;z-index:99;display:flex;align-items:center;padding:0 32px;transition:left .3s}
+.topbar-title{font-size:14px;font-weight:600;color:var(--dark)}
+.topbar-breadcrumb{font-size:13px;color:#999;margin-left:12px}
+.topbar-actions{margin-left:auto;display:flex;gap:8px}
+.topbar-actions a{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:#555;text-decoration:none;transition:all .15s;border:1px solid #e0e0e0}
+.topbar-actions a:hover{border-color:var(--terracotta);color:var(--terracotta)}
+.hamburger{display:none;position:fixed;top:16px;left:16px;z-index:200;width:40px;height:40px;border-radius:8px;background:var(--white);border:1px solid #e0e0e0;cursor:pointer;align-items:center;justify-content:center}
+.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);padding:64px 0 0 0;transition:margin-left .3s}
+.content{max-width:820px;margin:0 auto;padding:48px 40px 120px}
+
+/* Hero */
+.hero{padding:60px 40px 48px;margin:48px 40px 0;background:linear-gradient(135deg,var(--code-bg),#313244);border-radius:16px;color:var(--white);position:relative;overflow:hidden;max-width:820px;margin-left:auto;margin-right:auto}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:260px;height:260px;background:rgba(201,107,75,.15);border-radius:50%}
+.hero::after{content:'';position:absolute;bottom:-30px;left:40px;width:100px;height:100px;background:rgba(240,180,41,.1);border-radius:50%}
+.hero h1{font-size:36px;font-weight:800;margin-bottom:4px;position:relative;z-index:1}
+.hero .subtitle{font-size:17px;opacity:.75;margin-bottom:20px;position:relative;z-index:1;font-weight:400}
+.hero .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(201,107,75,.25);border:1px solid rgba(201,107,75,.4);border-radius:20px;font-size:13px;font-weight:600;position:relative;z-index:1;color:var(--terracotta-light)}
+.hero .badge i{width:14px;height:14px}
+
+/* Sections */
+.section{margin-top:56px}
+.section h2{font-size:26px;font-weight:800;color:var(--dark);margin-bottom:8px;padding-bottom:10px;border-bottom:2px solid var(--soft-gray)}
+.section h3{font-size:19px;font-weight:700;color:var(--dark);margin-top:36px;margin-bottom:10px}
+.section h4{font-size:15px;font-weight:600;color:var(--dark);margin-top:24px;margin-bottom:8px}
+.section p{margin-bottom:14px;color:#444;font-size:15px}
+.section ul,.section ol{margin:0 0 16px 20px;color:#444;font-size:15px}
+.section li{margin-bottom:6px}
+.section a{color:var(--terracotta);text-decoration:underline;text-decoration-color:rgba(201,107,75,.3);text-underline-offset:3px;transition:text-decoration-color .15s}
+.section a:hover{text-decoration-color:var(--terracotta)}
+.section strong{color:var(--dark);font-weight:600}
+.section code:not(pre code){font-family:'JetBrains Mono',monospace;background:rgba(201,107,75,.08);color:var(--terracotta-dark);padding:2px 6px;border-radius:4px;font-size:13px;font-weight:500}
+
+/* Code blocks */
+.code-block{position:relative;margin:18px 0;border-radius:12px;overflow:hidden;background:var(--code-bg);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.code-block-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.08)}
+.code-block-lang{font-size:12px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.5px}
+.code-block-title{font-size:12px;font-weight:500;color:rgba(255,255,255,.5)}
+.copy-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:transparent;color:rgba(255,255,255,.6);font-size:12px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;transition:all .15s}
+.copy-btn:hover{border-color:var(--amber);color:var(--amber)}
+.copy-btn.copied{border-color:#4ade80;color:#4ade80}
+.copy-btn i{width:14px;height:14px}
+.code-block pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);margin:0}
+.code-block pre code{font-family:inherit}
+
+/* Syntax */
+.tok-kw{color:#cba6f7}.tok-str{color:#a6e3a1}.tok-num{color:#fab387}.tok-cm{color:#6c7086;font-style:italic}.tok-fn{color:#89b4fa}.tok-op{color:#89dceb}.tok-prop{color:#f9e2af}.tok-punct{color:#9399b2}.tok-bool{color:#fab387}.tok-type{color:#f9e2af}
+
+/* Visual blocks */
+.block-demo{display:flex;flex-wrap:wrap;gap:16px;margin:24px 0;padding:24px;background:var(--soft-gray);border-radius:12px;border:1px solid #e0e0e0}
+.vis-block{display:inline-flex;align-items:center;gap:0;padding:0;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--white);box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;white-space:nowrap;user-select:none}
+.vis-block .b-label{padding:8px 14px}
+.vis-block .b-notch{width:12px;height:12px;background:inherit;filter:brightness(.85);position:relative}
+.vis-block .b-notch::after{content:'';position:absolute;width:8px;height:6px;background:rgba(0,0,0,.2);border-radius:0 0 3px 3px;left:50%;top:-2px;transform:translateX(-50%)}
+.vis-block .b-mouth{padding:8px 14px;background:rgba(0,0,0,.15);border-radius:0 0 6px 6px;font-weight:400;font-size:12px;color:rgba(255,255,255,.9)}
+.vis-block.event{background:var(--block-event);border-radius:8px 8px 8px 0;position:relative}
+.vis-block.event::after{content:'';position:absolute;bottom:-8px;left:0;width:100%;height:8px;background:var(--block-event);clip-path:polygon(0 0,100% 0,calc(100% - 8px) 100%,8px 100%)}
+.vis-block.stack{background:var(--block-stack)}
+.vis-block.reporter{background:var(--block-reporter);border-radius:20px}
+.vis-block.boolean{background:var(--block-boolean);border-radius:4px;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);padding:8px 20px}
+.vis-block.c-block{background:var(--block-c);border-radius:8px;flex-direction:column;align-items:stretch;min-width:200px}
+.vis-block.c-block .c-top{padding:8px 14px}
+.vis-block.c-block .c-body{background:rgba(0,0,0,.12);margin:0 8px;padding:8px 10px;border-radius:4px;font-weight:400;font-size:12px;min-height:32px;color:rgba(255,255,255,.85)}
+.vis-block.c-block .c-bottom{padding:8px 14px}
+.block-label-tag{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-left:8px;opacity:.6}
+
+/* Concept cards */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:18px 0}
+.concept-card{padding:20px;background:var(--white);border:1px solid #e0e0e0;border-radius:12px;transition:border-color .15s,box-shadow .15s}
+.concept-card:hover{border-color:var(--terracotta);box-shadow:0 4px 12px rgba(201,107,75,.1)}
+.concept-card .icon-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.concept-card .icon-wrap i{width:20px;height:20px;color:var(--white)}
+.concept-card h4{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--dark)}
+.concept-card p{font-size:13px;color:#666;margin:0;line-height:1.5}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:center;gap:0;margin:24px 0;overflow-x:auto;padding:8px 0}
+.pipeline-step{flex-shrink:0;padding:14px 20px;background:var(--soft-gray);border:1px solid #e0e0e0;border-radius:10px;text-align:center;font-size:13px;font-weight:600;color:var(--dark);min-width:120px}
+.pipeline-step .step-label{font-size:11px;color:#999;font-weight:500;margin-top:4px}
+.pipeline-arrow{flex-shrink:0;display:flex;align-items:center;padding:0 6px;color:var(--terracotta)}
+.pipeline-arrow i{width:20px;height:20px}
+
+/* Table */
+.api-table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;border-radius:10px;overflow:hidden;border:1px solid #e0e0e0}
+.api-table thead{background:var(--soft-gray)}
+.api-table th{text-align:left;padding:12px 16px;font-weight:600;font-size:13px;color:var(--dark);border-bottom:2px solid #e0e0e0}
+.api-table td{padding:12px 16px;border-bottom:1px solid #eee;vertical-align:top}
+.api-table tr:last-child td{border-bottom:none}
+.api-table code{font-family:'JetBrains Mono',monospace;background:rgba(201,107,75,.08);color:var(--terracotta-dark);padding:2px 6px;border-radius:4px;font-size:12.5px;white-space:nowrap}
+.api-table .method-desc{color:#666;font-size:13px}
+.lang-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600}
+.lang-badge .dot{width:8px;height:8px;border-radius:50%}
+
+/* Info box */
+.info-box{padding:16px 20px;border-radius:10px;margin:18px 0;font-size:14px;line-height:1.6;display:flex;gap:12px;align-items:flex-start}
+.info-box i{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+.info-box.tip{background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.25);color:#7a5c00}
+.info-box.info{background:rgba(91,141,239,.08);border:1px solid rgba(91,141,239,.2);color:#2a5494}
+
+/* Download */
+.download-card{margin:24px 0;padding:32px;background:linear-gradient(135deg,var(--terracotta),var(--terracotta-dark));border-radius:14px;color:var(--white);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.download-card h3{font-size:22px;font-weight:800;margin-bottom:4px}
+.download-card p{font-size:14px;opacity:.85}
+.download-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--white);color:var(--terracotta-dark);border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.download-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.download-btn i{width:20px;height:20px}
+
+/* Example side-by-side */
+.example-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.example-grid .example-col{min-width:0}
+.example-col h4{font-size:13px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.example-col .vis-block{margin-bottom:8px;transform-origin:left center}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-overlay.show{display:block}
+  .topbar{left:0}
+  .main{margin-left:0}
+  .content{padding:48px 20px 120px}
+  .hero{margin:48px 20px 0;padding:40px 24px 36px}
+  .hero h1{font-size:28px}
+  .hamburger{display:flex}
+  .topbar-actions a span{display:none}
+  .example-grid{grid-template-columns:1fr}
+  .pipeline{flex-wrap:wrap;justify-content:center}
+  .download-card{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+  <i data-lucide="menu" style="width:20px;height:20px;color:var(--dark)"></i>
+</button>
+<div class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo"><img src="../logo.png" alt="BlockCodigo"></div>
+    <h2>BlockCodigo</h2>
+    <span class="version">v0.1.0</span>
+  </div>
+  <div class="sidebar-nav-group">API Reference</div>
+  <nav id="sidebar-nav">
+    <a href="#hero" class="active"><i data-lucide="home"></i> Inicio</a>
+    <a href="#conceptos"><i data-lucide="puzzle"></i> Conceptos</a>
+    <a href="#estructura"><i data-lucide="box"></i> Estructura de Bloques</a>
+    <a href="#api"><i data-lucide="code-2"></i> API de Bloques</a>
+    <a href="#conversion"><i data-lucide="refresh-cw"></i> Conversión Code ↔ Blocks</a>
+    <a href="#compiladores"><i data-lucide="cpu"></i> Compiladores</a>
+    <a href="#ejemplos"><i data-lucide="layout-grid"></i> Ejemplos</a>
+    <a href="#descarga"><i data-lucide="download"></i> Descarga</a>
+  </nav>
+</aside>
+
+<div class="topbar" id="topbar">
+  <span class="topbar-title">BlockCodigo API</span>
+  <span class="topbar-breadcrumb">/ Documentación</span>
+  <div class="topbar-actions">
+    <a href="#"><i data-lucide="github" style="width:16px;height:16px"></i> <span>GitHub</span></a>
+    <a href="#"><i data-lucide="book-open" style="width:16px;height:16px"></i> <span>SDK</span></a>
+  </div>
+</div>
+
+<main class="main">
+  <div class="hero" id="hero">
+    <h1>BlockCodigo API</h1>
+    <p class="subtitle">Sistema de Programación Visual</p>
+    <span class="badge"><i data-lucide="blocks"></i> v0.1.0-alpha</span>
+  </div>
+
+  <div class="content">
+
+    <!-- Conceptos -->
+    <section class="section" id="conceptos">
+      <h2>Conceptos</h2>
+      <p>BlockCodigo es un sistema de programación visual que convierte bloques arrastrables en código funcional. Se basa en cuatro pilares fundamentales:</p>
+
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="icon-wrap" style="background:var(--terracotta)"><i data-lucide="layers"></i></div>
+          <h4>IR (Intermediate Representation)</h4>
+          <p>Representación intermedia que almacena la estructura lógica de los bloques antes de convertirla en código.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon-wrap" style="background:var(--block-stack)"><i data-lucide="box"></i></div>
+          <h4>Blocks</h4>
+          <p>Elementos visuales arrastrables que representan sentencias, expresiones y eventos del programa.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon-wrap" style="background:var(--block-reporter)"><i data-lucide="arrow-left-right"></i></div>
+          <h4>Converters</h4>
+          <p>Módulos que transforman código fuente en bloques visuales y viceversa.</p>
+        </div>
+        <div class="concept-card">
+          <div class="icon-wrap" style="background:var(--block-c)"><i data-lucide="terminal"></i></div>
+          <h4>Emitters</h4>
+          <p>Generadores de código finales que toman el IR y producen código en lenguajes objetivo.</p>
+        </div>
+      </div>
+
+      <h3>Pipeline de Conversión</h3>
+      <div class="pipeline">
+        <div class="pipeline-step">Bloques<div class="step-label">UI Visual</div></div>
+        <div class="pipeline-arrow"><i data-lucide="arrow-right"></i></div>
+        <div class="pipeline-step">IR<div class="step-label">AST Interno</div></div>
+        <div class="pipeline-arrow"><i data-lucide="arrow-right"></i></div>
+        <div class="pipeline-step">Emitters<div class="step-label">Generación</div></div>
+        <div class="pipeline-arrow"><i data-lucide="arrow-right"></i></div>
+        <div class="pipeline-step">Código<div class="step-label">Python / JS / Batch</div></div>
+      </div>
+    </section>
+
+    <!-- Estructura de Bloques -->
+    <section class="section" id="estructura">
+      <h2>Estructura de Bloques</h2>
+      <p>BlockCodigo define cinco tipos de bloques, cada uno con un propósito y forma visual única:</p>
+
+      <h3>Hat Blocks (Eventos)</h3>
+      <p>Bloques de inicio que disparan la ejecución del programa. Siempre van primero en una pila.</p>
+      <div class="block-demo">
+        <div class="vis-block event">
+          <div class="b-notch"></div>
+          <span class="b-label">Cuando el programa inicie</span>
+        </div>
+      </div>
+
+      <h3>Stack Blocks (Sentencias)</h3>
+      <p>Acciones y comandos que se apilan secuencialmente.</p>
+      <div class="block-demo">
+        <div class="vis-block stack">
+          <span class="b-label">Imprimir a consola</span>
+          <div class="b-mouth">"Hola Mundo"</div>
+        </div>
+        <div class="vis-block stack">
+          <span class="b-label">Definir variable</span>
+          <div class="b-mouth">x = 10</div>
+        </div>
+      </div>
+
+      <h3>Reporter Blocks (Expresiones)</h3>
+      <p>Retornan un valor. Se insertan dentro de los puertos de otros bloques.</p>
+      <div class="block-demo">
+        <div class="vis-block reporter">
+          <span class="b-label">Variable x</span>
+        </div>
+        <div class="vis-block reporter">
+          <span class="b-label"> longitud de </span>
+          <div class="b-mouth">texto</div>
+        </div>
+      </div>
+
+      <h3>Boolean Blocks</h3>
+      <p>Retornan verdadero o falso. Forma de diamante hexagonal.</p>
+      <div class="block-demo">
+        <div class="vis-block boolean">
+          <span class="b-label">x &gt; 10</span>
+        </div>
+        <div class="vis-block boolean">
+          <span class="b-label">es igual a</span>
+        </div>
+      </div>
+
+      <h3>C-Blocks (Control)</h3>
+      <p>Bloques con cuerpo interno para condicionales y bucles.</p>
+      <div class="block-demo" style="flex-direction:column;align-items:flex-start">
+        <div class="vis-block c-block" style="width:280px">
+          <div class="c-top">Si (condición) entonces</div>
+          <div class="c-body">sentencias...</div>
+          <div class="c-bottom">sino</div>
+          <div class="c-body">sentencias alternativas...</div>
+        </div>
+        <div class="vis-block c-block" style="width:280px;margin-top:12px">
+          <div class="c-top">Para cada i en 1..10</div>
+          <div class="c-body">sentencias del bucle...</div>
+        </div>
+      </div>
+
+      <h3>Tabla Resumen</h3>
+      <table class="api-table">
+        <thead>
+          <tr><th>Tipo</th><th>Forma</th><th>Uso</th><th>Ejemplo</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Hat</strong></td><td>Redondeada arriba, dentada abajo</td><td>Eventos de inicio</td><td>Cuando el programa inicie</td></tr>
+          <tr><td><strong>Stack</strong></td><td>Rectangular con muescas</td><td>Acciones</td><td>Imprimir a consola</td></tr>
+          <tr><td><strong>Reporter</strong></td><td>Ovalada / redondeada</td><td>Expresiones con valor</td><td>Variable x</td></tr>
+          <tr><td><strong>Boolean</strong></td><td>Hexagonal / diamante</td><td>Condiciones</td><td>x &gt; 10</td></tr>
+          <tr><td><strong>C-Block</strong></td><td>Con cuerpo interno</td><td>Control de flujo</td><td>Si/Entonces, Para cada</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- API de Bloques -->
+    <section class="section" id="api">
+      <h2>API de Bloques</h2>
+      <p>Registra bloques personalizados con la API de <code>BlockCodigo.registerBlock()</code>:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code>BlockCodigo.<span class="tok-fn">registerBlock</span>({
+  <span class="tok-prop">id</span>: <span class="tok-str">'print'</span>,
+  <span class="tok-prop">label</span>: <span class="tok-str">'Print to Console'</span>,
+  <span class="tok-prop">category</span>: <span class="tok-str">'io'</span>,
+  <span class="tok-prop">shape</span>: <span class="tok-str">'stack'</span>,
+  <span class="tok-prop">ports</span>: [{
+    <span class="tok-prop">id</span>: <span class="tok-str">'msg'</span>,
+    <span class="tok-prop">type</span>: <span class="tok-str">'string'</span>,
+    <span class="tok-prop">direction</span>: <span class="tok-str">'input'</span>
+  }],
+  <span class="tok-prop">toCode</span>: (<span class="tok-fn">block</span>) => <span class="tok-str">`console.log(</span><span class="tok-fn">${block.getPort('msg')}</span><span class="tok-str">);`</span>
+});</code></pre>
+      </div>
+
+      <h3>Propiedades del Bloque</h3>
+      <table class="api-table">
+        <thead>
+          <tr><th>Propiedad</th><th>Tipo</th><th>Descripción</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>Identificador único del bloque</td></tr>
+          <tr><td><code>label</code></td><td>string</td><td>Texto visible en el bloque</td></tr>
+          <tr><td><code>category</code></td><td>string</td><td>Categoría para el panel de bloques: <code>io</code>, <code>math</code>, <code>logic</code>, <code>variables</code>, <code>loops</code></td></tr>
+          <tr><td><code>shape</code></td><td>string</td><td>Forma visual: <code>hat</code>, <code>stack</code>, <code>reporter</code>, <code>boolean</code>, <code>c-block</code></td></tr>
+          <tr><td><code>ports</code></td><td>array</td><td>Puertos de entrada/salida del bloque</td></tr>
+          <tr><td><code>toCode</code></td><td>function</td><td>Función que convierte el bloque a código fuente</td></tr>
+          <tr><td><code>color</code></td><td>string (opcional)</td><td>Color hex personalizado del bloque</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Tipos de Puerto</h3>
+      <table class="api-table">
+        <thead>
+          <tr><th>Tipo</th><th>Formato</th><th>Ejemplo de Valor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>string</code></td><td>Campo de texto</td><td>"Hola mundo"</td></tr>
+          <tr><td><code>number</code></td><td>Campo numérico</td><td>42</td></tr>
+          <tr><td><code>boolean</code></td><td>Bloque booleano enchufable</td><td>true / false</td></tr>
+          <tr><td><code>block</code></td><td>Bloque reporter enchufable</td><td>Variable, expresión</td></tr>
+          <tr><td><code>dropdown</code></td><td>Menú desplegable</td><td>Opción seleccionada</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Ejemplo Avanzado: Bloque If/Else</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code>BlockCodigo.<span class="tok-fn">registerBlock</span>({
+  <span class="tok-prop">id</span>: <span class="tok-str">'if_else'</span>,
+  <span class="tok-prop">label</span>: <span class="tok-str">'Si %condición entonces'</span>,
+  <span class="tok-prop">category</span>: <span class="tok-str">'logic'</span>,
+  <span class="tok-prop">shape</span>: <span class="tok-str">'c-block'</span>,
+  <span class="tok-prop">ports</span>: [
+    { <span class="tok-prop">id</span>: <span class="tok-str">'condition'</span>, <span class="tok-prop">type</span>: <span class="tok-str">'boolean'</span>, <span class="tok-prop">direction</span>: <span class="tok-str">'input'</span> },
+    { <span class="tok-prop">id</span>: <span class="tok-str">'then'</span>, <span class="tok-prop">type</span>: <span class="tok-str">'statement'</span>, <span class="tok-prop">direction</span>: <span class="tok-str">'body'</span> },
+    { <span class="tok-prop">id</span>: <span class="tok-str">'else'</span>, <span class="tok-prop">type</span>: <span class="tok-str">'statement'</span>, <span class="tok-prop">direction</span>: <span class="tok-str">'body'</span> }
+  ],
+  <span class="tok-prop">toCode</span>: (<span class="tok-fn">block</span>) => {
+    <span class="tok-kw">const</span> cond = block.<span class="tok-fn">getPort</span>(<span class="tok-str">'condition'</span>);
+    <span class="tok-kw">const</span> thenBody = block.<span class="tok-fn">getBody</span>(<span class="tok-str">'then'</span>);
+    <span class="tok-kw">const</span> elseBody = block.<span class="tok-fn">getBody</span>(<span class="tok-str">'else'</span>);
+    <span class="tok-kw">return</span> <span class="tok-str">`if (${cond}) {\n${thenBody}\n} else {\n${elseBody}\n}`</span>;
+  }
+});</code></pre>
+      </div>
+
+      <h3>Métodos del Bloque</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-cm">// Dentro de la función toCode(block):</span>
+
+<span class="tok-cm">// Obtener valor de un puerto de entrada</span>
+block.<span class="tok-fn">getPort</span>(<span class="tok-str">'msg'</span>);          <span class="tok-cm">// → "Hola" o表达式</span>
+
+<span class="tok-cm">// Obtener cuerpo de un C-block</span>
+block.<span class="tok-fn">getBody</span>(<span class="tok-str">'then'</span>);          <span class="tok-cm">// → código generado del cuerpo</span>
+
+<span class="tok-cm">// Obtener valor de un dropdown</span>
+block.<span class="tok-fn">getDropdown</span>(<span class="tok-str">'op'</span>);       <span class="tok-cm">// → "+"</span>
+
+<span class="tok-cm">// Verificar si un puerto tiene conexión</span>
+block.<span class="tok-fn">hasPort</span>(<span class="tok-str">'condition'</span>);    <span class="tok-cm">// → true/false</span>
+
+<span class="tok-cm">// Obtener la posición del bloque en el workspace</span>
+block.<span class="tok-fn">getPosition</span>();             <span class="tok-cm">// → { x: 120, y: 80 }</span></code></pre>
+      </div>
+    </section>
+
+    <!-- Conversión -->
+    <section class="section" id="conversion">
+      <h2>Conversión Code ↔ Blocks</h2>
+      <p>BlockCodigo soporta <strong>conversión bidireccional</strong>: puedes importar código existente como bloques visuales, y exportar bloques como código.</p>
+
+      <h3>Código → Bloques (Importación)</h3>
+      <p>El parser analiza el código fuente y genera un AST (Abstract Syntax Tree). Los <strong>Converters</strong> mapean cada nodo del AST a un bloque visual correspondiente.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-cm">// Importar código al editor de bloques</span>
+BlockCodigo.<span class="tok-fn">importCode</span>(sourceCode, {
+  <span class="tok-prop">language</span>: <span class="tok-str">'javascript'</span>,
+  <span class="tok-prop">onImport</span>: (<span class="tok-fn">blocks</span>) => {
+    <span class="tok-cm">// blocks contiene el array de bloques parseados</span>
+    console.<span class="tok-fn">log</span>(<span class="tok-str">`Importados </span><span class="tok-fn">${blocks.length}</span><span class="tok-str"> bloques`</span>);
+  },
+  <span class="tok-prop">onError</span>: (<span class="tok-fn">err</span>) => {
+    console.<span class="tok-fn">error</span>(<span class="tok-str">'Error de parseo:'</span>, err.message);
+  }
+});</code></pre>
+      </div>
+
+      <h3>Bloques → Código (Exportación)</h3>
+      <p>Cada bloque ejecuta su función <code>toCode()</code>. El <strong>Emitter</strong> recorre el árbol de bloques y genera el código final respetando la indentación y sintaxis del lenguaje objetivo.</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-cm">// Exportar bloques a código</span>
+<span class="tok-kw">const</span> code = BlockCodigo.<span class="tok-fn">exportCode</span>({
+  <span class="tok-prop">language</span>: <span class="tok-str">'python'</span>,
+  <span class="tok-prop">indent</span>: <span class="tok-num">4</span>,
+  <span class="tok-prop">target</span>: <span class="tok-str">'python3.11'</span>
+});
+
+<span class="tok-cm">// resultado: código Python generado</span>
+console.<span class="tok-fn">log</span>(code);
+<span class="tok-cm">// → "print('Hola Mundo')"</span>
+<span class="tok-cm">// → "for i in range(10):"</span>
+<span class="tok-cm">// → "    print(i)"</span></code></pre>
+      </div>
+
+      <div class="info-box info">
+        <i data-lucide="info"></i>
+        <div>La conversión no es 100% perfecta en ambos sentidos. Algunas construcciones complejas de código pueden no tener un equivalente visual directo. BlockCodigo marcará estos casos con advertencias.</div>
+      </div>
+    </section>
+
+    <!-- Compiladores -->
+    <section class="section" id="compiladores">
+      <h2>Compiladores Soportados</h2>
+      <p>BlockCodigo incluye emitters para los siguientes lenguajes:</p>
+      <table class="api-table">
+        <thead>
+          <tr><th>Lenguaje</th><th>Soporte</th><th>Notas</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="lang-badge"><span class="dot" style="background:#F0B429"></span> JavaScript</span></td>
+            <td><strong>Completo</strong></td>
+            <td>Soporte completo para ES2024+. Incluye async/await, destructuring y más.</td>
+          </tr>
+          <tr>
+            <td><span class="lang-badge"><span class="dot" style="background:#5B8DEF"></span> Python</span></td>
+            <td><strong>Completo</strong></td>
+            <td>Python 3.8+. Soporta comprensiones, f-strings y type hints.</td>
+          </tr>
+          <tr>
+            <td><span class="lang-badge"><span class="dot" style="background:#9B59B6"></span> Batch</span></td>
+            <td><strong>Parcial</strong></td>
+            <td>Limitado por la naturaleza de Batch. Soporta comandos básicos, if/for.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Emitir código en diferentes lenguajes</h3>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-cm">// Definir un emitter personalizado</span>
+BlockCodigo.<span class="tok-fn">registerEmitter</span>(<span class="tok-str">'rust'</span>, {
+  <span class="tok-prop">name</span>: <span class="tok-str">'Rust'</span>,
+  <span class="tok-prop">ext</span>: <span class="tok-str">'.rs'</span>,
+  <span class="tok-prop">emit</span>: (<span class="tok-fn">ir</span>) => {
+    <span class="tok-kw">const</span> emitter = <span class="tok-kw">new</span> <span class="tok-type">RustEmitter</span>();
+    <span class="tok-kw">return</span> emitter.<span class="tok-fn">generate</span>(ir);
+  }
+});</code></pre>
+      </div>
+
+      <div class="info-box tip">
+        <i data-lucide="lightbulb"></i>
+        <div>Puedes crear emitters personalizados para cualquier lenguaje. Consulta la sección de <a href="#api">API de Bloques</a> para más detalles.</div>
+      </div>
+    </section>
+
+    <!-- Ejemplos -->
+    <section class="section" id="ejemplos">
+      <h2>Ejemplos</h2>
+      <p>Tres ejemplos que muestran la relación entre bloques visuales y código generado.</p>
+
+      <h3>1. Imprimir "Hola Mundo"</h3>
+      <div class="block-demo">
+        <div class="vis-block event">
+          <div class="b-notch"></div>
+          <span class="b-label">Cuando el programa inicie</span>
+        </div>
+        <div class="vis-block stack" style="margin-left:24px">
+          <span class="b-label">Imprimir</span>
+          <div class="b-mouth">"Hola Mundo"</div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-fn">onStart</span>(() => {
+  console.<span class="tok-fn">log</span>(<span class="tok-str">"Hola Mundo"</span>);
+});</code></pre>
+      </div>
+
+      <h3>2. Contador con bucle</h3>
+      <div class="block-demo" style="flex-direction:column;align-items:flex-start">
+        <div class="vis-block event">
+          <div class="b-notch"></div>
+          <span class="b-label">Cuando el programa inicie</span>
+        </div>
+        <div class="vis-block c-block" style="margin-left:24px;margin-top:12px;width:260px">
+          <div class="c-top">Para cada i en 1..5</div>
+          <div class="c-body">
+            <div class="vis-block stack" style="margin:0;font-size:12px">
+              <span class="b-label">Imprimir</span>
+              <div class="b-mouth">i * 10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-fn">onStart</span>(() => {
+  <span class="tok-kw">for</span> (<span class="tok-kw">let</span> i = <span class="tok-num">1</span>; i <= <span class="tok-num">5</span>; i++) {
+    console.<span class="tok-fn">log</span>(i * <span class="tok-num">10</span>);
+  }
+});</code></pre>
+      </div>
+
+      <h3>3. Condicional con variable</h3>
+      <div class="block-demo" style="flex-direction:column;align-items:flex-start">
+        <div class="vis-block event">
+          <div class="b-notch"></div>
+          <span class="b-label">Cuando el programa inicie</span>
+        </div>
+        <div class="vis-block stack" style="margin-left:24px;margin-top:12px">
+          <span class="b-label">Definir</span>
+          <div class="b-mouth">edad = 20</div>
+        </div>
+        <div class="vis-block c-block" style="margin-left:24px;margin-top:12px;width:300px">
+          <div class="c-top">Si <div class="vis-block boolean" style="margin:0 6px;font-size:12px;padding:4px 12px"><span class="b-label">edad &gt;= 18</span></div> entonces</div>
+          <div class="c-body">
+            <div class="vis-block stack" style="margin:0;font-size:12px">
+              <span class="b-label">Imprimir</span>
+              <div class="b-mouth">"Mayor de edad"</div>
+            </div>
+          </div>
+          <div class="c-bottom">sino</div>
+          <div class="c-body">
+            <div class="vis-block stack" style="margin:0;font-size:12px">
+              <span class="b-label">Imprimir</span>
+              <div class="b-mouth">"Menor de edad"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
+        </div>
+        <pre><code><span class="tok-fn">onStart</span>(() => {
+  <span class="tok-kw">let</span> edad = <span class="tok-num">20</span>;
+  <span class="tok-kw">if</span> (edad >= <span class="tok-num">18</span>) {
+    console.<span class="tok-fn">log</span>(<span class="tok-str">"Mayor de edad"</span>);
+  } <span class="tok-kw">else</span> {
+    console.<span class="tok-fn">log</span>(<span class="tok-str">"Menor de edad"</span>);
+  }
+});</code></pre>
+      </div>
+    </section>
+
+    <!-- Descarga -->
+    <section class="section" id="descarga">
+      <h2>Descarga</h2>
+      <p>Descarga BlockCodigo para empezar a programar visualmente.</p>
+      <div class="download-card">
+        <div>
+          <h3>BlockCodigo v0.1.0-alpha</h3>
+          <p>Compatible con Libre Código v0.1.0+. Incluye soporte para JavaScript, Python y Batch.</p>
+        </div>
+        <a href="#" class="download-btn">
+          <i data-lucide="download"></i>
+          Descargar BlockCodigo
+        </a>
+      </div>
+
+      <h3>Requisitos del Sistema</h3>
+      <ul>
+        <li><strong>SO:</strong> Windows 10+, macOS 12+, Linux (Ubuntu 20.04+)</li>
+        <li><strong>RAM:</strong> 4 GB mínimo</li>
+        <li><strong>Disco:</strong> 200 MB de espacio libre</li>
+        <li><strong>Libre Código:</strong> v0.1.0 o superior</li>
+      </ul>
+
+      <div class="info-box tip">
+        <i data-lucide="lightbulb"></i>
+        <div>BlockCodigo viene preinstalado en Libre Código desde la versión v0.1.0. Si ya tienes Libre Código, no necesitas descargar nada adicional.</div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+lucide.createIcons();
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.querySelector('.mobile-overlay').classList.toggle('show');
+}
+
+function copyCode(btn){
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent || pre.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.classList.add('copied');
+    btn.innerHTML = '<i data-lucide="check"></i> Copiado';
+    lucide.createIcons();
+    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='<i data-lucide="clipboard"></i> Copiar';lucide.createIcons();},2000);
+  });
+}
+
+// Active nav on scroll
+const sections = document.querySelectorAll('.section, .hero');
+const navLinks = document.querySelectorAll('#sidebar-nav a');
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const id = entry.target.getAttribute('id');
+      navLinks.forEach(link=>{
+        link.classList.toggle('active', link.getAttribute('href')==='#'+id);
+      });
+    }
+  });
+},{rootMargin:'-80px 0px -60% 0px',threshold:0});
+sections.forEach(s=>observer.observe(s));
+
+// Close sidebar on mobile when clicking nav
+navLinks.forEach(link=>link.addEventListener('click',()=>{
+  if(window.innerWidth<=900){
+    document.getElementById('sidebar').classList.remove('open');
+    document.querySelector('.mobile-overlay').classList.remove('show');
+  }
+}));
+</script>
+</body>
+</html>
