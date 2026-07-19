@@ -3,534 +3,1014 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SDK para Plugins - Libre Código</title>
+<title>SDK para Plugins — Libre Código</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--terracotta:#C96B4B;--amber:#F0B429;--white:#FFFFFF;--soft-gray:#F5F5F5;--dark:#222222;--terracotta-light:#e8936f;--terracotta-dark:#a8553a;--amber-light:#f5cc6a;--code-bg:#1e1e2e;--code-text:#cdd6f4;--sidebar-w:280px}
-html{scroll-behavior:smooth;scroll-padding-top:80px}
-body{font-family:'Inter',sans-serif;color:var(--dark);background:var(--white);line-height:1.7}
-::selection{background:var(--terracotta);color:var(--white)}
-.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--soft-gray);border-right:1px solid #e0e0e0;overflow-y:auto;z-index:100;padding:0;transition:transform .3s ease}
-.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:10px}
-.sidebar-header .logo{width:36px;height:36px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.sidebar-header .logo img{width:100%;height:100%;object-fit:contain}
-.sidebar-header h2{font-size:15px;font-weight:700;color:var(--dark)}
-.sidebar-header .version{font-size:11px;font-weight:500;color:var(--terracotta);background:rgba(201,107,75,.12);padding:2px 8px;border-radius:20px;margin-left:auto}
-.sidebar nav{padding:12px 0}
-.sidebar nav a{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13.5px;color:#555;text-decoration:none;font-weight:500;transition:all .15s;border-left:3px solid transparent}
-.sidebar nav a:hover{color:var(--terracotta);background:rgba(201,107,75,.06)}
-.sidebar nav a.active{color:var(--terracotta);background:rgba(201,107,75,.08);border-left-color:var(--terracotta);font-weight:600}
-.sidebar nav a i{width:18px;height:18px;flex-shrink:0}
-.sidebar-nav-group{padding:0 20px;margin-top:16px;margin-bottom:4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#999}
-.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:64px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:1px solid #e8e8e8;z-index:99;display:flex;align-items:center;padding:0 32px;transition:left .3s}
-.topbar-title{font-size:14px;font-weight:600;color:var(--dark)}
-.topbar-breadcrumb{font-size:13px;color:#999;margin-left:12px}
-.topbar-actions{margin-left:auto;display:flex;gap:8px}
-.topbar-actions a{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;color:#555;text-decoration:none;transition:all .15s;border:1px solid #e0e0e0}
-.topbar-actions a:hover{border-color:var(--terracotta);color:var(--terracotta)}
-.hamburger{display:none;position:fixed;top:16px;left:16px;z-index:200;width:40px;height:40px;border-radius:8px;background:var(--white);border:1px solid #e0e0e0;cursor:pointer;align-items:center;justify-content:center}
-.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
-.main{margin-left:var(--sidebar-w);padding:64px 0 0 0;transition:margin-left .3s}
-.content{max-width:820px;margin:0 auto;padding:48px 40px 120px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --terracotta:#C96B4B;--amber:#F0B429;--white:#FFFFFF;--gray:#F5F5F5;
+  --dark:#222222;--sidebar-w:260px;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font);color:var(--dark);background:var(--white);line-height:1.7}
+
+/* Sidebar */
+.sidebar{
+  position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;
+  background:var(--dark);color:var(--white);overflow-y:auto;z-index:100;
+  display:flex;flex-direction:column;transition:transform .3s ease;
+}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-header .logo-row{display:flex;align-items:center;gap:12px}
+.sidebar-header img{width:40px;height:40px;border-radius:8px;object-fit:contain;background:var(--white);padding:2px}
+.sidebar-header img[src=""]{display:none}
+.sidebar-header .logo-fallback{
+  display:none;width:40px;height:40px;border-radius:8px;background:var(--terracotta);
+  color:var(--white);align-items:center;justify-content:center;font-weight:700;font-size:14px;
+}
+.sidebar-header img[src=""]~.logo-fallback{display:flex}
+.sidebar-header .logo-text{font-weight:700;font-size:18px}
+.sidebar-header .sdk-badge{
+  display:inline-block;margin-top:8px;padding:2px 8px;border-radius:4px;
+  background:rgba(255,255,255,.1);font-size:11px;color:var(--amber);font-family:var(--mono);
+}
+.sidebar-nav{flex:1;padding:12px 0}
+.sidebar-nav a{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.65);
+  text-decoration:none;font-size:14px;font-weight:500;transition:all .15s;border-left:3px solid transparent;
+}
+.sidebar-nav a:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.sidebar-nav a.active{color:var(--white);background:rgba(201,107,75,.15);border-left-color:var(--terracotta)}
+.sidebar-nav a i{width:18px;height:18px;flex-shrink:0}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);min-height:100vh}
+.hamburger{
+  display:none;position:fixed;top:12px;left:12px;z-index:200;width:40px;height:40px;
+  background:var(--dark);color:var(--white);border:none;border-radius:8px;cursor:pointer;
+  align-items:center;justify-content:center;
+}
+.content{max-width:900px;margin:0 auto;padding:40px 40px 80px}
+.content section{margin-bottom:64px}
+.content h1{font-size:2.4rem;font-weight:800;line-height:1.2;margin-bottom:8px}
+.content h2{font-size:1.6rem;font-weight:700;color:var(--terracotta);margin-bottom:16px;padding-top:32px}
+.content h3{font-size:1.15rem;font-weight:600;margin-bottom:8px}
+.content p{margin-bottom:14px;color:#444}
+.content ul,.content ol{margin:0 0 16px 20px}
+.content li{margin-bottom:6px}
+.content a{color:var(--terracotta);text-decoration:none;font-weight:500}
+.content a:hover{text-decoration:underline}
+.content strong{font-weight:600}
 
 /* Hero */
-.hero{padding:60px 40px 48px;margin:48px 40px 0;background:linear-gradient(135deg,var(--terracotta),var(--terracotta-dark));border-radius:16px;color:var(--white);position:relative;overflow:hidden;max-width:820px;margin-left:auto;margin-right:auto}
-.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:rgba(255,255,255,.08);border-radius:50%}
-.hero::after{content:'';position:absolute;bottom:-40px;right:60px;width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:50%}
-.hero h1{font-size:36px;font-weight:800;margin-bottom:8px;position:relative;z-index:1}
-.hero .subtitle{font-size:17px;opacity:.9;margin-bottom:20px;position:relative;z-index:1}
-.hero .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:20px;font-size:13px;font-weight:600;position:relative;z-index:1}
-.hero .badge i{width:14px;height:14px}
-
-/* Sections */
-.section{margin-top:56px}
-.section h2{font-size:26px;font-weight:800;color:var(--dark);margin-bottom:8px;padding-bottom:10px;border-bottom:2px solid var(--soft-gray)}
-.section h3{font-size:19px;font-weight:700;color:var(--dark);margin-top:36px;margin-bottom:10px}
-.section h4{font-size:15px;font-weight:600;color:var(--dark);margin-top:24px;margin-bottom:8px}
-.section p{margin-bottom:14px;color:#444;font-size:15px}
-.section ul,.section ol{margin:0 0 16px 20px;color:#444;font-size:15px}
-.section li{margin-bottom:6px}
-.section a{color:var(--terracotta);text-decoration:underline;text-decoration-color:rgba(201,107,75,.3);text-underline-offset:3px;transition:text-decoration-color .15s}
-.section a:hover{text-decoration-color:var(--terracotta)}
-.section strong{color:var(--dark);font-weight:600}
-.section code:not(pre code){font-family:'JetBrains Mono',monospace;background:rgba(201,107,75,.08);color:var(--terracotta-dark);padding:2px 6px;border-radius:4px;font-size:13px;font-weight:500}
+.hero{padding:60px 0 40px;text-align:left}
+.hero .version{
+  display:inline-block;padding:4px 12px;border-radius:20px;background:rgba(201,107,75,.1);
+  color:var(--terracotta);font-size:13px;font-weight:600;font-family:var(--mono);margin-bottom:16px;
+}
+.hero h1 span{color:var(--terracotta)}
+.hero .desc{font-size:1.1rem;color:#555;max-width:600px;margin-top:12px}
 
 /* Code blocks */
-.code-block{position:relative;margin:18px 0;border-radius:12px;overflow:hidden;background:var(--code-bg);box-shadow:0 4px 16px rgba(0,0,0,.12)}
-.code-block-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.08)}
-.code-block-lang{font-size:12px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.5px}
-.code-block-title{font-size:12px;font-weight:500;color:rgba(255,255,255,.5)}
-.copy-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:transparent;color:rgba(255,255,255,.6);font-size:12px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;transition:all .15s}
-.copy-btn:hover{border-color:var(--amber);color:var(--amber)}
-.copy-btn.copied{border-color:#4ade80;color:#4ade80}
-.copy-btn i{width:14px;height:14px}
-.code-block pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--code-text);margin:0}
-.code-block pre code{font-family:inherit}
+.code-block{position:relative;margin:16px 0 20px;border-radius:10px;overflow:hidden;background:#1e1e1e}
+.code-block .code-header{
+  display:flex;justify-content:space-between;align-items:center;padding:8px 16px;
+  background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.08);
+}
+.code-block .code-lang{font-size:12px;color:rgba(255,255,255,.5);font-family:var(--mono)}
+.code-block .copy-btn{
+  background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);
+  padding:3px 10px;border-radius:5px;font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s;
+}
+.code-block .copy-btn:hover{border-color:var(--terracotta);color:var(--terracotta)}
+.code-block pre{padding:16px 20px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#d4d4d4}
+.code-block code{font-family:var(--mono)}
 
-/* Syntax highlighting */
-.tok-kw{color:#cba6f7}
-.tok-str{color:#a6e3a1}
-.tok-num{color:#fab387}
-.tok-cm{color:#6c7086;font-style:italic}
-.tok-fn{color:#89b4fa}
-.tok-op{color:#89dceb}
-.tok-prop{color:#f9e2af}
-.tok-punct{color:#9399b2}
-.tok-bool{color:#fab387}
-.tok-type{color:#f9e2af}
+/* Inline code */
+:not(pre)>code{
+  background:rgba(201,107,75,.08);color:var(--terracotta);padding:2px 6px;border-radius:4px;
+  font-family:var(--mono);font-size:.88em;
+}
+
+/* Tables */
+.api-table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+.api-table th{
+  text-align:left;padding:10px 14px;background:var(--dark);color:var(--white);font-weight:600;
+}
+.api-table td{padding:10px 14px;border-bottom:1px solid #eee;vertical-align:top}
+.api-table tr:hover td{background:var(--gray)}
+.api-table .mono{font-family:var(--mono);font-size:13px;color:var(--terracotta)}
+.api-table .required{color:var(--terracotta);font-weight:600;font-size:12px}
+.api-table .optional{color:#999;font-size:12px}
+
+/* Schema */
+.schema-block{
+  background:var(--gray);border:1px solid #ddd;border-radius:10px;padding:20px 24px;margin:16px 0;
+}
+.schema-block h4{font-size:14px;color:var(--terracotta);margin-bottom:10px}
+.schema-field{
+  display:grid;grid-template-columns:160px 80px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid #e5e5e5;
+  font-size:14px;align-items:start;
+}
+.schema-field:last-child{border-bottom:none}
+.schema-field .fname{font-family:var(--mono);font-weight:500;color:var(--dark)}
+.schema-field .ftype{font-family:var(--mono);font-size:12px;color:#888}
+.schema-field .fdesc{color:#555}
+
+/* Info boxes */
+.info-box{
+  border-left:4px solid var(--amber);background:rgba(240,180,41,.06);padding:14px 18px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px;
+}
+.info-box strong{color:var(--dark)}
+.warning-box{
+  border-left:4px solid #E53E3E;background:rgba(229,62,62,.05);padding:14px 18px;
+  border-radius:0 8px 8px 0;margin:16px 0;font-size:14px;
+}
 
 /* File tree */
-.file-tree{background:var(--soft-gray);border:1px solid #e0e0e0;border-radius:10px;padding:20px 24px;font-family:'JetBrains Mono',monospace;font-size:13.5px;line-height:2;color:var(--dark);margin:18px 0}
-.file-tree .folder{color:var(--terracotta);font-weight:600}
-.file-tree .file{color:#555}
-.file-tree .indent{display:inline-block;width:20px}
+.file-tree{
+  background:var(--gray);border:1px solid #ddd;border-radius:10px;padding:18px 24px;
+  font-family:var(--mono);font-size:13.5px;line-height:1.8;margin:16px 0;
+}
+.file-tree .comment{color:#888}
 
-/* Table */
-.api-table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;border-radius:10px;overflow:hidden;border:1px solid #e0e0e0}
-.api-table thead{background:var(--soft-gray)}
-.api-table th{text-align:left;padding:12px 16px;font-weight:600;font-size:13px;color:var(--dark);border-bottom:2px solid #e0e0e0}
-.api-table td{padding:12px 16px;border-bottom:1px solid #eee;vertical-align:top}
-.api-table tr:last-child td{border-bottom:none}
-.api-table code{font-family:'JetBrains Mono',monospace;background:rgba(201,107,75,.08);color:var(--terracotta-dark);padding:2px 6px;border-radius:4px;font-size:12.5px;white-space:nowrap}
-.api-table .method-desc{color:#666;font-size:13px}
+/* Button */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:8px;
+  font-weight:600;font-size:15px;text-decoration:none;transition:all .2s;border:none;cursor:pointer;
+}
+.btn-primary{background:var(--terracotta);color:var(--white)}
+.btn-primary:hover{background:#b55c3d;text-decoration:none}
+.btn-secondary{background:var(--dark);color:var(--white)}
+.btn-secondary:hover{background:#333;text-decoration:none}
+.btn-group{display:flex;gap:12px;margin:20px 0;flex-wrap:wrap}
 
-/* Info box */
-.info-box{padding:16px 20px;border-radius:10px;margin:18px 0;font-size:14px;line-height:1.6;display:flex;gap:12px;align-items:flex-start}
-.info-box i{width:20px;height:20px;flex-shrink:0;margin-top:1px}
-.info-box.tip{background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.25);color:#7a5c00}
-.info-box.warning{background:rgba(201,107,75,.08);border:1px solid rgba(201,107,75,.2);color:var(--terracotta-dark)}
+/* Events list */
+.event-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;
+  margin-bottom:6px;background:var(--gray);
+}
+.event-item code{font-family:var(--mono);font-size:13px;color:var(--terracotta);font-weight:500}
+.event-item span{font-size:13px;color:#555}
 
-/* FAQ */
-.faq-item{border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;overflow:hidden}
-.faq-q{padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:15px;color:var(--dark);background:var(--soft-gray);transition:background .15s}
-.faq-q:hover{background:#eaeaea}
-.faq-q i{width:18px;height:18px;color:#999;transition:transform .25s}
-.faq-item.open .faq-q i{transform:rotate(180deg)}
-.faq-a{padding:0 20px;max-height:0;overflow:hidden;transition:all .3s ease;font-size:14px;color:#555;line-height:1.7}
-.faq-item.open .faq-a{padding:0 20px 16px;max-height:400px}
-
-/* Step list */
-.steps{counter-reset:step;margin:18px 0;padding-left:0;list-style:none}
-.steps li{counter-increment:step;position:relative;padding-left:48px;margin-bottom:20px}
-.steps li::before{content:counter(step);position:absolute;left:0;top:0;width:32px;height:32px;background:var(--terracotta);color:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
-
-@media(max-width:900px){
+/* Responsive */
+@media(max-width:768px){
   .sidebar{transform:translateX(-100%)}
   .sidebar.open{transform:translateX(0)}
-  .mobile-overlay.show{display:block}
-  .topbar{left:0}
-  .main{margin-left:0}
-  .content{padding:48px 20px 120px}
-  .hero{margin:48px 20px 0;padding:40px 24px 36px}
-  .hero h1{font-size:28px}
   .hamburger{display:flex}
-  .topbar-actions a span{display:none}
+  .main{margin-left:0}
+  .content{padding:60px 20px 60px}
+  .hero h1{font-size:1.8rem}
+  .schema-field{grid-template-columns:1fr;gap:2px}
+  .api-table{font-size:12px}
+  .api-table th,.api-table td{padding:8px}
 }
+
+/* Syntax coloring */
+.kw{color:#569cd6}.fn{color:#dcdcaa}.str{color:#ce9178}.cm{color:#6a9955}.num{color:#b5cea8}
+.ty{color:#4ec9b0}.op{color:#d4d4d4}.pr{color:#9cdcfe}.dc{color:#ce9178}
 </style>
 </head>
 <body>
 
-<button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
-  <i data-lucide="menu" style="width:20px;height:20px;color:var(--dark)"></i>
+<!-- Mobile hamburger -->
+<button class="hamburger" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Menú">
+  <i data-lucide="menu" style="width:20px;height:20px"></i>
 </button>
-<div class="mobile-overlay" onclick="toggleSidebar()"></div>
 
+<!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <div class="logo"><img src="../logo.png" alt="Libre Código"></div>
-    <h2>Libre Código</h2>
-    <span class="version">v0.1.0</span>
+    <div class="logo-row">
+      <img src="../logo.png" alt="Libre Código" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="logo-fallback" style="display:none">LC</div>
+      <span class="logo-text">Libre Código</span>
+    </div>
+    <span class="sdk-badge">SDK v0.1.0-alpha</span>
   </div>
-  <div class="sidebar-nav-group">SDK para Plugins</div>
-  <nav id="sidebar-nav">
-    <a href="#hero" class="active"><i data-lucide="home"></i> Inicio</a>
-    <a href="#introduccion"><i data-lucide="book-open"></i> Introducción</a>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <a href="#inicio" class="active"><i data-lucide="home"></i> Inicio</a>
+    <a href="#instalacion"><i data-lucide="download"></i> Instalación</a>
     <a href="#estructura"><i data-lucide="folder-tree"></i> Estructura de un Plugin</a>
     <a href="#manifest"><i data-lucide="file-json"></i> manifest.json</a>
-    <a href="#api"><i data-lucide="cpu"></i> API Disponible</a>
-    <a href="#ejemplo"><i data-lucide="code-2"></i> Ejemplo Completo</a>
-    <a href="#publicacion"><i data-lucide="send"></i> Publicación</a>
-    <a href="#faq"><i data-lucide="help-circle"></i> FAQ</a>
+    <a href="#api"><i data-lucide="cpu"></i> API Reference</a>
+    <a href="#eventos"><i data-lucide="zap"></i> Sistema de Eventos</a>
+    <a href="#ejemplo-formateo"><i data-lucide="code"></i> Ej: Formateo JSON</a>
+    <a href="#ejemplo-conteo"><i data-lucide="hash"></i> Ej: Conteo de Líneas</a>
+    <a href="#publicacion"><i data-lucide="rocket"></i> Publicación</a>
+    <a href="#descarga"><i data-lucide="download-cloud"></i> Descarga</a>
   </nav>
 </aside>
 
-<div class="topbar" id="topbar">
-  <span class="topbar-title">SDK para Plugins</span>
-  <span class="topbar-breadcrumb">/ Documentación</span>
-  <div class="topbar-actions">
-    <a href="#"><i data-lucide="github" style="width:16px;height:16px"></i> <span>GitHub</span></a>
-    <a href="#"><i data-lucide="message-circle" style="width:16px;height:16px"></i> <span>Foro</span></a>
+<!-- Main Content -->
+<div class="main">
+<div class="content">
+
+<!-- 1. Inicio -->
+<section id="inicio">
+  <div class="hero">
+    <span class="version">v0.1.0-alpha</span>
+    <h1><span>SDK</span> para Plugins de Libre Código</h1>
+    <p class="desc">Crea plugins que extiendan las capacidades de Libre Código. Registra comandos, paneles, bloques visuales, temas personalizados y mucho más con una API sencilla y documentada.</p>
+    <div class="btn-group" style="margin-top:24px">
+      <a href="#instalacion" class="btn btn-primary"><i data-lucide="arrow-down" style="width:16px;height:16px"></i> Empezar</a>
+      <a href="#api" class="btn btn-secondary"><i data-lucide="book" style="width:16px;height:16px"></i> API Reference</a>
+    </div>
   </div>
-</div>
+</section>
 
-<main class="main">
-  <div class="hero" id="hero">
-    <h1>SDK para Plugins de Libre Código</h1>
-    <p class="subtitle">Crea plugins potentes para extender las funcionalidades de Libre Código</p>
-    <span class="badge"><i data-lucide="tag"></i> v0.1.0-alpha</span>
+<!-- 2. Instalación -->
+<section id="instalacion">
+  <h2><i data-lucide="download" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Instalación</h2>
+  <p>Existen dos formas de integrar el SDK en tu plugin:</p>
+
+  <h3>Opción 1: Incluir directamente</h3>
+  <p>Añade el archivo del SDK en la carpeta de tu plugin y referéncialo en tu HTML:</p>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">HTML</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code><span class="op">&lt;</span><span class="kw">script</span> <span class="fn">src</span><span class="op">=</span><span class="str">"libre-codigo-sdk.js"</span><span class="op">&gt;&lt;/</span><span class="kw">script</span><span class="op">&gt;</span></code></pre>
   </div>
 
-  <div class="content">
+  <h3>Opción 2: npm (futuro)</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code><span class="fn">npm</span> install <span class="str">@librecodigo/sdk</span></code></pre>
+  </div>
 
-    <!-- Introducción -->
-    <section class="section" id="introduccion">
-      <h2>Introducción</h2>
-      <p>El <strong>SDK para Plugins de Libre Código</strong> te permite crear extensiones que añadan nuevas funcionalidades al editor, como comandos personalizados, paneles laterales, bloques visuales y más.</p>
-      <p>Para empezar a desarrollar plugins necesitas:</p>
-      <ul>
-        <li>Un editor compatible con Libre Código (v0.1.0 o superior)</li>
-        <li>Node.js v18+ (para herramientas de desarrollo)</li>
-        <li>Conocimientos básicos de JavaScript</li>
-      </ul>
-      <div class="info-box tip">
-        <i data-lucide="lightbulb"></i>
-        <div>Puedes instalar el CLI de desarrollo con <code>npm install -g @libre-codigo/cli</code> y crear un proyecto base con <code>lc-plugin init mi-plugin</code>.</div>
-      </div>
-      <h3>Instalación Rápida</h3>
-      <div class="code-block">
-        <div class="code-block-header">
-          <span class="code-block-lang">bash</span>
-          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
-        </div>
-        <pre><code><span class="tok-cm"># Instalar el CLI</span>
-npm install -g @libre-codigo/cli
+  <div class="info-box">
+    <strong>Nota:</strong> La instalación por npm estará disponible en una versión estable futura. Por ahora, incluye el archivo JS directamente en tu proyecto.
+  </div>
+</section>
 
-<span class="tok-cm"># Crear un nuevo plugin</span>
-lc-plugin init mi-plugin
+<!-- 3. Estructura -->
+<section id="estructura">
+  <h2><i data-lucide="folder-tree" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Estructura de un Plugin</h2>
+  <p>Cada plugin es una carpeta independiente con la siguiente estructura:</p>
+  <div class="file-tree">
+    <div>mi-plugin/</div>
+    <div>├── <strong>manifest.json</strong> <span class="comment"># Metadatos del plugin</span></div>
+    <div>├── <strong>index.js</strong> <span class="comment"># Punto de entrada principal</span></div>
+    <div>├── <strong>styles.css</strong> <span class="comment"># Estilos opcionales</span></div>
+    <div>└── <strong>README.md</strong> <span class="comment"># Documentación del plugin</span></div>
+  </div>
+  <p>El archivo <code>manifest.json</code> es <strong>obligatorio</strong> y define los metadatos esenciales. El <code>index.js</code> es el punto de entrada donde se registra la funcionalidad del plugin usando la API del SDK.</p>
+</section>
 
-<span class="tok-cm"># Iniciar modo desarrollo</span>
-<span class="tok-kw">cd</span> mi-plugin
-lc-plugin dev</code></pre>
-      </div>
-    </section>
+<!-- 4. manifest.json -->
+<section id="manifest">
+  <h2><i data-lucide="file-json" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>manifest.json</h2>
+  <p>El archivo <code>manifest.json</code> contiene toda la información necesaria para que Libre Código cargue y gestione tu plugin.</p>
 
-    <!-- Estructura -->
-    <section class="section" id="estructura">
-      <h2>Estructura de un Plugin</h2>
-      <p>Cada plugin de Libre Código sigue una estructura de archivos simple y predecible:</p>
-      <div class="file-tree">
-        <div><span class="folder">mi-plugin/</span></div>
-        <div><span class="indent"></span><span class="indent"></span><span class="file">├── manifest.json</span></div>
-        <div><span class="indent"></span><span class="indent"></span><span class="file">├── index.js</span></div>
-        <div><span class="indent"></span><span class="indent"></span><span class="file">└── styles.css</span></div>
-      </div>
-      <ul>
-        <li><strong><code>manifest.json</code></strong> — Metadatos del plugin: nombre, versión, permisos, etc.</li>
-        <li><strong><code>index.js</code></strong> — Código principal del plugin. Se ejecuta al cargar.</li>
-        <li><strong><code>styles.css</code></strong> — Estilos CSS opcionales para la UI del plugin.</li>
-      </ul>
-      <div class="info-box tip">
-        <i data-lucide="lightbulb"></i>
-        <div>También puedes incluir una carpeta <code>assets/</code> para imágenes, fuentes y otros recursos estáticos.</div>
-      </div>
-    </section>
-
-    <!-- manifest.json -->
-    <section class="section" id="manifest">
-      <h2>manifest.json</h2>
-      <p>El archivo <code>manifest.json</code> define la identidad y configuración de tu plugin. Es obligatorio y debe estar en la raíz del proyecto.</p>
-      <h3>Campos</h3>
-      <table class="api-table">
-        <thead>
-          <tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>name</code></td><td>string</td><td>Nombre único del plugin (kebab-case)</td></tr>
-          <tr><td><code>version</code></td><td>string</td><td>Versión semántica (ej: "1.0.0")</td></tr>
-          <tr><td><code>author</code></td><td>string</td><td>Nombre del autor o equipo</td></tr>
-          <tr><td><code>description</code></td><td>string</td><td>Descripción breve del plugin</td></tr>
-          <tr><td><code>main</code></td><td>string</td><td>Ruta al archivo de entrada (default: "index.js")</td></tr>
-          <tr><td><code>permissions</code></td><td>array</td><td>Permisos requeridos (ej: ["fs", "network"])</td></tr>
-          <tr><td><code>dependencies</code></td><td>object</td><td>Dependencias de otros plugins</td></tr>
-        </tbody>
-      </table>
-      <h3>Ejemplo</h3>
-      <div class="code-block">
-        <div class="code-block-header">
-          <span class="code-block-lang">json</span>
-          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
-        </div>
-        <pre><code>{
-  <span class="tok-prop">"name"</span>: <span class="tok-str">"json-formatter"</span>,
-  <span class="tok-prop">"version"</span>: <span class="tok-str">"1.0.0"</span>,
-  <span class="tok-prop">"author"</span>: <span class="tok-str">"Tu Nombre"</span>,
-  <span class="tok-prop">"description"</span>: <span class="tok-str">"Formatea JSON con un solo clic"</span>,
-  <span class="tok-prop">"main"</span>: <span class="tok-str">"index.js"</span>,
-  <span class="tok-prop">"permissions"</span>: [<span class="tok-str">"editor"</span>],
-  <span class="tok-prop">"dependencies"</span>: {}
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JSON</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code>{
+  <span class="pr">"name"</span>: <span class="str">"mi-plugin"</span>,
+  <span class="pr">"displayName"</span>: <span class="str">"Mi Plugin"</span>,
+  <span class="pr">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="pr">"description"</span>: <span class="str">"Descripción del plugin"</span>,
+  <span class="pr">"author"</span>: <span class="str">"Tu Nombre"</span>,
+  <span class="pr">"main"</span>: <span class="str">"index.js"</span>,
+  <span class="pr">"icon"</span>: <span class="str">"icon.png"</span>,
+  <span class="pr">"permissions"</span>: [<span class="str">"filesystem"</span>, <span class="str">"terminal"</span>, <span class="str">"editor"</span>],
+  <span class="pr">"minAppVersion"</span>: <span class="str">"0.1.0"</span>,
+  <span class="pr">"dependencies"</span>: {},
+  <span class="pr">"contributes"</span>: {
+    <span class="pr">"commands"</span>: [],
+    <span class="pr">"panels"</span>: [],
+    <span class="pr">"blocks"</span>: [],
+    <span class="pr">"themes"</span>: [],
+    <span class="pr">"languages"</span>: []
+  }
 }</code></pre>
-      </div>
-    </section>
+  </div>
 
-    <!-- API -->
-    <section class="section" id="api">
-      <h2>API Disponible</h2>
-      <p>El SDK expone un objeto global <code>libre_codigo</code> con los siguientes métodos:</p>
-      <table class="api-table">
-        <thead>
-          <tr><th>Método</th><th>Descripción</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><code>registerCommand(name, callback)</code></td>
-            <td class="method-desc">Registra un comando que aparecerá en la paleta de comandos (Ctrl+Shift+P)</td>
-          </tr>
-          <tr>
-            <td><code>registerPanel(id, options)</code></td>
-            <td class="method-desc">Registra un panel lateral con contenido personalizado</td>
-          </tr>
-          <tr>
-            <td><code>registerBlock(def)</code></td>
-            <td class="method-desc">Registra un bloque visual para BlockCodigo</td>
-          </tr>
-          <tr>
-            <td><code>getEditor()</code></td>
-            <td class="method-desc">Retorna la instancia actual del editor (CodeMirror)</td>
-          </tr>
-          <tr>
-            <td><code>readFile(path)</code></td>
-            <td class="method-desc">Lee el contenido de un archivo del proyecto (requiere permiso "fs")</td>
-          </tr>
-          <tr>
-            <td><code>writeFile(path, content)</code></td>
-            <td class="method-desc">Escribe contenido a un archivo del proyecto (requiere permiso "fs")</td>
-          </tr>
-          <tr>
-            <td><code>onEvent(name, callback)</code></td>
-            <td class="method-desc">Escucha eventos del editor: <code>save</code>, <code>open</code>, <code>change</code>, etc.</td>
-          </tr>
-          <tr>
-            <td><code>showNotification(msg, type)</code></td>
-            <td class="method-desc">Muestra una notificación: <code>info</code>, <code>success</code>, <code>warning</code>, <code>error</code></td>
-          </tr>
-        </tbody>
-      </table>
+  <h3>Referencia de Campos</h3>
 
-      <h3>Ejemplo de Uso</h3>
-      <div class="code-block">
-        <div class="code-block-header">
-          <span class="code-block-lang">javascript</span>
-          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
-        </div>
-        <pre><code><span class="tok-cm">// Registrar un comando</span>
-libre_codigo.<span class="tok-fn">registerCommand</span>(<span class="tok-str">'format-json'</span>, () => {
-  <span class="tok-kw">const</span> editor = libre_codigo.<span class="tok-fn">getEditor</span>();
-  <span class="tok-kw">const</span> code = editor.<span class="tok-fn">getValue</span>();
+  <div class="schema-block">
+    <div class="schema-field" style="border-bottom:2px solid #ccc;font-weight:700">
+      <div>Campo</div><div>Tipo</div><div>Descripción</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">name</div>
+      <div class="ftype">string <span class="required">(requerido)</span></div>
+      <div class="fdesc">Identificador único del plugin. Solo minúsculas, números y guiones.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">displayName</div>
+      <div class="ftype">string <span class="required">(requerido)</span></div>
+      <div class="fdesc">Nombre visible del plugin en la interfaz.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">version</div>
+      <div class="ftype">string <span class="required">(requerido)</span></div>
+      <div class="fdesc">Versión en formato semántico (major.minor.patch).</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">description</div>
+      <div class="ftype">string <span class="required">(requerido)</span></div>
+      <div class="fdesc">Breve descripción de la funcionalidad del plugin.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">author</div>
+      <div class="ftype">string <span class="required">(requerido)</span></div>
+      <div class="fdesc">Nombre del autor o equipo desarrollador.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">main</div>
+      <div class="ftype">string <span class="required">(requerido)</span></div>
+      <div class="fdesc">Ruta al archivo de entrada principal (relativa al plugin).</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">icon</div>
+      <div class="ftype">string <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Ruta al icono del plugin (png, svg). Se muestra en la barra lateral.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">permissions</div>
+      <div class="ftype">string[] <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Permisos necesarios: <code>filesystem</code>, <code>terminal</code>, <code>editor</code>, <code>network</code>. Si no se especifica, solo tiene acceso básico al editor.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">minAppVersion</div>
+      <div class="ftype">string <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Versión mínima de Libre Código requerida. Formato semántico.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">dependencies</div>
+      <div class="ftype">object <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Mapa de dependencias de otros plugins: <code>{"plugin-name": "^1.0.0"}</code>.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">contributes.commands</div>
+      <div class="ftype">array <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Lista de comandos declarados por el plugin.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">contributes.panels</div>
+      <div class="ftype">array <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Paneles de la barra lateral que provee el plugin.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">contributes.blocks</div>
+      <div class="ftype">array <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Bloques visuales de BlockCodigo que registra el plugin.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">contributes.themes</div>
+      <div class="ftype">array <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Temas de color personalizados que ofrece el plugin.</div>
+    </div>
+    <div class="schema-field">
+      <div class="fname">contributes.languages</div>
+      <div class="ftype">array <span class="optional">(opcional)</span></div>
+      <div class="fdesc">Lenguajes adicionales con resaltado de sintaxis.</div>
+    </div>
+  </div>
+</section>
 
-  <span class="tok-kw">try</span> {
-    <span class="tok-kw">const</span> formatted = JSON.<span class="tok-fn">stringify</span>(JSON.<span class="tok-fn">parse</span>(code), <span class="tok-kw">null</span>, <span class="tok-num">2</span>);
-    editor.<span class="tok-fn">setValue</span>(formatted);
-    libre_codigo.<span class="tok-fn">showNotification</span>(<span class="tok-str">'JSON formateado correctamente'</span>, <span class="tok-str">'success'</span>);
-  } <span class="tok-kw">catch</span> (e) {
-    libre_codigo.<span class="tok-fn">showNotification</span>(<span class="tok-str">'Error: JSON inválido'</span>, <span class="tok-str">'error'</span>);
-  }
+<!-- 5. API Reference -->
+<section id="api">
+  <h2><i data-lucide="cpu" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Referencia de la API</h2>
+  <p>Toda la API está disponible a través del objeto global <code>LibreCodigo</code> que el SDK expone tras cargarse.</p>
+
+  <h3>Registro</h3>
+  <table class="api-table">
+    <thead><tr><th>Método</th><th>Parámetros</th><th>Retorna</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">registerCommand(id, options)</td><td class="mono">string, {label, category, callback}</td><td class="mono">void</td><td>Registra un comando personalizado. <code>id</code> único, <code>label</code> visible, <code>category</code> de agrupación, <code>callback</code> función a ejecutar.</td></tr>
+      <tr><td class="mono">registerPanel(id, options)</td><td class="mono">string, {title, icon, render}</td><td class="mono">void</td><td>Registra un panel en la barra lateral. <code>icon</code> es nombre de Lucide, <code>render</code> retorna HTML string.</td></tr>
+      <tr><td class="mono">registerBlock(definition)</td><td class="mono">BlockDefinition</td><td class="mono">void</td><td>Registra un bloque visual para BlockCodigo.</td></tr>
+      <tr><td class="mono">registerTheme(name, theme)</td><td class="mono">string, ThemeObject</td><td class="mono">void</td><td>Registra un tema personalizado de colores.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Editor</h3>
+  <table class="api-table">
+    <thead><tr><th>Método</th><th>Parámetros</th><th>Retorna</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">getEditor()</td><td class="mono">—</td><td class="mono">MonacoEditor</td><td>Retorna la instancia del editor Monaco.</td></tr>
+      <tr><td class="mono">getLanguage()</td><td class="mono">—</td><td class="mono">string</td><td>Obtiene el lenguaje activo del editor (ej: <code>"javascript"</code>).</td></tr>
+      <tr><td class="mono">setLanguage(lang)</td><td class="mono">string</td><td class="mono">void</td><td>Cambia el lenguaje del editor.</td></tr>
+      <tr><td class="mono">getTheme()</td><td class="mono">—</td><td class="mono">string</td><td>Obtiene el nombre del tema activo.</td></tr>
+      <tr><td class="mono">getActiveFile()</td><td class="mono">—</td><td class="mono">string | null</td><td>Ruta del archivo activo en el editor.</td></tr>
+      <tr><td class="mono">openFile(path)</td><td class="mono">string</td><td class="mono">void</td><td>Abre un archivo en el editor por su ruta.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Archivos</h3>
+  <table class="api-table">
+    <thead><tr><th>Método</th><th>Parámetros</th><th>Retorna</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">readFile(path)</td><td class="mono">string</td><td class="mono">Promise&lt;string&gt;</td><td>Lee el contenido de un archivo.</td></tr>
+      <tr><td class="mono">writeFile(path, content)</td><td class="mono">string, string</td><td class="mono">Promise&lt;void&gt;</td><td>Escribe contenido en un archivo.</td></tr>
+      <tr><td class="mono">createFile(path)</td><td class="mono">string</td><td class="mono">Promise&lt;void&gt;</td><td>Crea un archivo vacío en la ruta indicada.</td></tr>
+      <tr><td class="mono">deleteFile(path)</td><td class="mono">string</td><td class="mono">Promise&lt;void&gt;</td><td>Elimina un archivo.</td></tr>
+      <tr><td class="mono">listFiles(dir)</td><td class="mono">string</td><td class="mono">Promise&lt;string[]&gt;</td><td>Lista los archivos y carpetas de un directorio.</td></tr>
+      <tr><td class="mono">getFilesystem()</td><td class="mono">—</td><td class="mono">FilesystemAPI</td><td>Retorna la API completa del sistema de archivos.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Eventos</h3>
+  <table class="api-table">
+    <thead><tr><th>Método</th><th>Parámetros</th><th>Retorna</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">onEvent(event, callback)</td><td class="mono">string, Function</td><td class="mono">Disposable</td><td>Escucha un evento. Retorna objeto para desuscribirse con <code>.dispose()</code>.</td></tr>
+      <tr><td class="mono">emitEvent(event, data)</td><td class="mono">string, any</td><td class="mono">void</td><td>Emite un evento personalizado con datos.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Interfaz</h3>
+  <table class="api-table">
+    <thead><tr><th>Método</th><th>Parámetros</th><th>Retorna</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">showNotification(msg, type)</td><td class="mono">string, "info"|"warning"|"error"|"success"</td><td class="mono">void</td><td>Muestra una notificación toast.</td></tr>
+      <tr><td class="mono">showInputBox(options)</td><td class="mono">{prompt, default?, password?}</td><td class="mono">Promise&lt;string&gt;</td><td>Muestra un diálogo de entrada de texto.</td></tr>
+      <tr><td class="mono">showQuickPick(items)</td><td class="mono">string[] | {label, description}[]</td><td class="mono">Promise&lt;string&gt;</td><td>Muestra un menú de selección rápida.</td></tr>
+      <tr><td class="mono">getConfiguration()</td><td class="mono">—</td><td class="mono">object</td><td>Retorna la configuración actual del IDE.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Sistema</h3>
+  <table class="api-table">
+    <thead><tr><th>Método</th><th>Parámetros</th><th>Retorna</th><th>Descripción</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">executeCommand(cmd)</td><td class="mono">string</td><td class="mono">Promise&lt;{stdout, stderr, exitCode}&gt;</td><td>Ejecuta un comando del sistema. Requiere permiso <code>terminal</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 6. Sistema de Eventos -->
+<section id="eventos">
+  <h2><i data-lucide="zap" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Sistema de Eventos</h2>
+  <p>El SDK expone un sistema de eventos pub/sub para reaccionar a acciones del IDE. Usa <code>onEvent</code> para escuchar y <code>emitEvent</code> para publicar.</p>
+
+  <h3>Eventos del Sistema</h3>
+  <div class="event-item"><code>file-open</code><span>Se abrió un archivo. Datos: <code>{path, language}</code></span></div>
+  <div class="event-item"><code>file-save</code><span>Se guardó un archivo. Datos: <code>{path}</code></span></div>
+  <div class="event-item"><code>file-close</code><span>Se cerró un archivo. Datos: <code>{path}</code></span></div>
+  <div class="event-item"><code>code-change</code><span>El contenido del editor cambió. Datos: <code>{changes}</code></span></div>
+  <div class="event-item"><code>language-change</code><span>Se cambió el lenguaje. Datos: <code>{language}</code></span></div>
+  <div class="event-item"><code>project-change</code><span>Se abrió un proyecto. Datos: <code>{projectPath}</code></span></div>
+  <div class="event-item"><code>project-close</code><span>Se cerró el proyecto. Sin datos.</span></div>
+  <div class="event-item"><code>block-add</code><span>Se añadió un bloque. Datos: <code>{blockId}</code></span></div>
+  <div class="event-item"><code>block-remove</code><span>Se eliminó un bloque. Datos: <code>{blockId}</code></span></div>
+  <div class="event-item"><code>block-change</code><span>Un bloque cambió. Datos: <code>{blockId, changes}</code></span></div>
+  <div class="event-item"><code>terminal-output</code><span>Salida del terminal. Datos: <code>{text, stream}</code></span></div>
+
+  <h3>Ejemplo de Uso</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code><span class="kw">const</span> disposable = LibreCodigo.<span class="fn">onEvent</span>(<span class="str">'file-save'</span>, (data) <span class="op">=&gt;</span> {
+  console.<span class="fn">log</span>(<span class="str">'Archivo guardado:'</span>, data.path);
 });
 
-<span class="tok-cm">// Escuchar eventos</span>
-libre_codigo.<span class="tok-fn">onEvent</span>(<span class="tok-str">'save'</span>, (file) => {
-  console.<span class="tok-fn">log</span>(<span class="tok-str">'Archivo guardado:'</span>, file.path);
+<span class="cm">// Más tarde, para desuscribirse:</span>
+disposable.<span class="fn">dispose</span>();</code></pre>
+  </div>
+
+  <h3>Eventos Personalizados</h3>
+  <p>Puedes crear y emitir tus propios eventos para la comunicación entre componentes de tu plugin o con otros plugins:</p>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code><span class="cm">// Emitir un evento personalizado</span>
+LibreCodigo.<span class="fn">emitEvent</span>(<span class="str">'mi-plugin:datorecibido'</span>, { id: <span class="num">42</span>, texto: <span class="str">'Hola'</span> });
+
+<span class="cm">// Escucharlo desde otro plugin</span>
+LibreCodigo.<span class="fn">onEvent</span>(<span class="str">'mi-plugin:datorecibido'</span>, (data) <span class="op">=&gt;</span> {
+  LibreCodigo.<span class="fn">showNotification</span>(<span class="str">'Recibido: '</span> + data.texto, <span class="str">'info'</span>);
 });</code></pre>
-      </div>
-    </section>
+  </div>
+</section>
 
-    <!-- Ejemplo Completo -->
-    <section class="section" id="ejemplo">
-      <h2>Ejemplo Completo</h2>
-      <p>A continuación se muestra el código completo de un plugin formateador de JSON:</p>
+<!-- 7. Ejemplo: Formateo JSON -->
+<section id="ejemplo-formateo">
+  <h2><i data-lucide="code" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Ejemplo: Plugin de Formateo JSON</h2>
+  <p>Un plugin completo que registra un comando para formatear JSON en el editor.</p>
 
-      <h4>index.js</h4>
-      <div class="code-block">
-        <div class="code-block-header">
-          <span class="code-block-lang">javascript</span>
-          <button class="copy-btn" onclick="copyCode(this)"><i data-lucide="clipboard"></i> Copiar</button>
-        </div>
-        <pre><code><span class="tok-cm">/**
- * JSON Formatter Plugin for Libre Código
- * Formatea y valida JSON directamente desde el editor
- */</span>
+  <h3>manifest.json</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JSON</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code>{
+  <span class="pr">"name"</span>: <span class="str">"json-formatter"</span>,
+  <span class="pr">"displayName"</span>: <span class="str">"JSON Formatter"</span>,
+  <span class="pr">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="pr">"description"</span>: <span class="str">"Formatea y valida JSON en el editor"</span>,
+  <span class="pr">"author"</span>: <span class="str">"Libre Código"</span>,
+  <span class="pr">"main"</span>: <span class="str">"index.js"</span>,
+  <span class="pr">"permissions"</span>: [<span class="str">"editor"</span>],
+  <span class="pr">"contributes"</span>: {
+    <span class="pr">"commands"</span>: [{ <span class="pr">"id"</span>: <span class="str">"json-format"</span>, <span class="pr">"label"</span>: <span class="str">"Format JSON"</span> }]
+  }
+}</code></pre>
+  </div>
 
-<span class="tok-cm">// Registrar el comando principal</span>
-libre_codigo.<span class="tok-fn">registerCommand</span>(<span class="tok-str">'json-formatter:format'</span>, () => {
-  <span class="tok-kw">const</span> editor = libre_codigo.<span class="tok-fn">getEditor</span>();
-  <span class="tok-kw">const</span> cursor = editor.<span class="tok-fn">getCursor</span>();
-  <span class="tok-kw">const</span> selection = editor.<span class="tok-fn">getSelection</span>();
-
-  <span class="tok-kw">let</span> text = selection || editor.<span class="tok-fn">getValue</span>();
-
-  <span class="tok-kw">try</span> {
-    <span class="tok-kw">const</span> parsed = JSON.<span class="tok-fn">parse</span>(text);
-    <span class="tok-kw">const</span> formatted = JSON.<span class="tok-fn">stringify</span>(parsed, <span class="tok-kw">null</span>, <span class="tok-num">2</span>);
-
-    <span class="tok-kw">if</span> (selection) {
-      editor.<span class="tok-fn">replaceSelection</span>(formatted);
-    } <span class="tok-kw">else</span> {
-      editor.<span class="tok-fn">setValue</span>(formatted);
+  <h3>index.js</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code>LibreCodigo.<span class="fn">registerCommand</span>(<span class="str">'json-format'</span>, {
+  <span class="pr">label</span>: <span class="str">'Format JSON'</span>,
+  <span class="pr">category</span>: <span class="str">'Format'</span>,
+  <span class="pr">callback</span>: () <span class="op">=&gt;</span> {
+    <span class="kw">const</span> editor = LibreCodigo.<span class="fn">getEditor</span>();
+    <span class="kw">const</span> content = editor.<span class="fn">getValue</span>();
+    <span class="kw">try</span> {
+      <span class="kw">const</span> parsed = JSON.<span class="fn">parse</span>(content);
+      <span class="kw">const</span> formatted = JSON.<span class="fn">stringify</span>(parsed, <span class="kw">null</span>, <span class="num">2</span>);
+      editor.<span class="fn">setValue</span>(formatted);
+      LibreCodigo.<span class="fn">showNotification</span>(<span class="str">'JSON formateado correctamente'</span>, <span class="str">'success'</span>);
+    } <span class="kw">catch</span> (e) {
+      LibreCodigo.<span class="fn">showNotification</span>(<span class="str">'JSON inválido: '</span> + e.message, <span class="str">'error'</span>);
     }
+  }
+});</code></pre>
+  </div>
+</section>
 
-    editor.<span class="tok-fn">setCursor</span>(cursor);
-    libre_codigo.<span class="tok-fn">showNotification</span>(<span class="tok-str">'✓ JSON formateado'</span>, <span class="tok-str">'success'</span>);
-  } <span class="tok-kw">catch</span> (e) {
-    libre_codigo.<span class="tok-fn">showNotification</span>(
-      <span class="tok-str">`Error en línea ${e.lineNumber}: ${e.message}`</span>,
-      <span class="tok-str">'error'</span>
-    );
+<!-- 8. Ejemplo: Conteo de Líneas -->
+<section id="ejemplo-conteo">
+  <h2><i data-lucide="hash" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Ejemplo: Plugin de Conteo de Líneas</h2>
+  <p>Un plugin que registra un panel lateral mostrando estadísticas del archivo activo.</p>
+
+  <h3>manifest.json</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JSON</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code>{
+  <span class="pr">"name"</span>: <span class="str">"line-counter"</span>,
+  <span class="pr">"displayName"</span>: <span class="str">"Conteo de Líneas"</span>,
+  <span class="pr">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="pr">"description"</span>: <span class="str">"Muestra estadísticas del archivo activo"</span>,
+  <span class="pr">"author"</span>: <span class="str">"Libre Código"</span>,
+  <span class="pr">"main"</span>: <span class="str">"index.js"</span>,
+  <span class="pr">"permissions"</span>: [<span class="str">"editor"</span>],
+  <span class="pr">"contributes"</span>: {
+    <span class="pr">"panels"</span>: [{ <span class="pr">"id"</span>: <span class="str">"line-stats"</span>, <span class="pr">"title"</span>: <span class="str">"Estadísticas"</span> }]
+  }
+}</code></pre>
+  </div>
+
+  <h3>index.js</h3>
+  <div class="code-block">
+    <div class="code-header"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code><span class="kw">function</span> <span class="fn">getStats</span>() {
+  <span class="kw">const</span> editor = LibreCodigo.<span class="fn">getEditor</span>();
+  <span class="kw">if</span> (!editor) <span class="kw">return</span> { lines: <span class="num">0</span>, words: <span class="num">0</span>, chars: <span class="num">0</span> };
+  <span class="kw">const</span> content = editor.<span class="fn">getValue</span>();
+  <span class="kw">return</span> {
+    <span class="pr">lines</span>: content.<span class="fn">split</span>(<span class="str">'\n'</span>).length,
+    <span class="pr">words</span>: content.<span class="fn">split</span>(<span class="op">/\s+/</span>).filter(Boolean).length,
+    <span class="pr">chars</span>: content.length
+  };
+}
+
+LibreCodigo.<span class="fn">registerPanel</span>(<span class="str">'line-stats'</span>, {
+  <span class="pr">title</span>: <span class="str">'Estadísticas'</span>,
+  <span class="pr">icon</span>: <span class="str">'bar-chart-2'</span>,
+  <span class="pr">render</span>: () <span class="op">=&gt;</span> {
+    <span class="kw">const</span> s = <span class="fn">getStats</span>();
+    <span class="kw">return</span> <span class="str">`
+      &lt;div style="padding:16px;font-family:Inter,sans-serif"&gt;
+        &lt;h3 style="margin-bottom:12px"&gt;Estadísticas&lt;/h3&gt;
+        &lt;p&gt;Líneas: &lt;strong&gt;${s.lines}&lt;/strong&gt;&lt;/p&gt;
+        &lt;p&gt;Palabras: &lt;strong&gt;${s.words}&lt;/strong&gt;&lt;/p&gt;
+        &lt;p&gt;Caracteres: &lt;strong&gt;${s.chars}&lt;/strong&gt;&lt;/p&gt;
+      &lt;/div&gt;
+    `</span>;
   }
 });
 
-<span class="tok-cm">// Registrar segundo comando: comprimir JSON</span>
-libre_codigo.<span class="tok-fn">registerCommand</span>(<span class="tok-str">'json-formatter:minify'</span>, () => {
-  <span class="tok-kw">const</span> editor = libre_codigo.<span class="tok-fn">getEditor</span>();
-  <span class="tok-kw">const</span> text = editor.<span class="tok-fn">getValue</span>();
+LibreCodigo.<span class="fn">onEvent</span>(<span class="str">'code-change'</span>, () <span class="op">=&gt;</span> {
+  LibreCodigo.<span class="fn">emitEvent</span>(<span class="str">'line-stats:refresh'</span>);
+});</code></pre>
+  </div>
+</section>
 
-  <span class="tok-kw">try</span> {
-    <span class="tok-kw">const</span> parsed = JSON.<span class="tok-fn">parse</span>(text);
-    editor.<span class="tok-fn">setValue</span>(JSON.<span class="tok-fn">stringify</span>(parsed));
-    libre_codigo.<span class="tok-fn">showNotification</span>(<span class="tok-str">'JSON comprimido'</span>, <span class="tok-str">'success'</span>);
-  } <span class="tok-kw">catch</span> (e) {
-    libre_codigo.<span class="tok-fn">showNotification</span>(<span class="tok-str">'JSON inválido'</span>, <span class="tok-str">'error'</span>);
-  }
-});
+<!-- 9. Publicación -->
+<section id="publicacion">
+  <h2><i data-lucide="rocket" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Publicación</h2>
+  <p>Sigue estos pasos para publicar tu plugin y que la comunidad pueda usarlo:</p>
+  <ol style="padding-left:20px">
+    <li style="margin-bottom:12px"><strong>Crea el manifest.json</strong> — Asegúrate de que todos los campos requeridos estén completos y que el <code>name</code> sea único.</li>
+    <li style="margin-bottom:12px"><strong>Testea localmente</strong> — Coloca tu plugin en la carpeta <code>plugins/</code> del directorio de Libre Código y reinicia la aplicación.</li>
+    <li style="margin-bottom:12px"><strong>Sube al foro</strong> — Crea un hilo en el <a href="#">foro de Libre Código</a> con el código fuente, capturas de pantalla y una descripción.</li>
+    <li style="margin-bottom:12px"><strong>Recibe feedback</strong> — La comunidad probará tu plugin y dejará sugerencias. Itera sobre las mejoras.</li>
+    <li style="margin-bottom:12px"><strong>Publica v1.0</strong> — Cuando el plugin esté estable, actualiza la versión a 1.0.0 y publica la versión final.</li>
+  </ol>
 
-<span class="tok-cm">// Registrar panel lateral con vista previa</span>
-libre_codigo.<span class="tok-fn">registerPanel</span>(<span class="tok-str">'json-preview'</span>, {
-  title: <span class="tok-str">'Vista Previa JSON'</span>,
-  icon: <span class="tok-str">'braces'</span>,
-  render: (container) => {
-    <span class="tok-kw">const</span> update = () => {
-      <span class="tok-kw">const</span> editor = libre_codigo.<span class="tok-fn">getEditor</span>();
-      <span class="tok-kw">try</span> {
-        <span class="tok-kw">const</span> data = JSON.<span class="tok-fn">parse</span>(editor.<span class="tok-fn">getValue</span>());
-        container.innerHTML = <span class="tok-str">`&lt;pre class="json-tree"&gt;${
-          JSON.<span class="tok-fn">stringify</span>(data, <span class="tok-kw">null</span>, <span class="tok-num">2</span>)
-        }&lt;/pre&gt;`</span>;
-      } <span class="tok-kw">catch</span> {
-        container.innerHTML = <span class="tok-str">'&lt;p class="error"&gt;JSON inválido&lt;/p&gt;'</span>;
+  <div class="warning-box">
+    <strong>Importante:</strong> Todos los plugins pasan por una revisión de seguridad antes de ser incluidos en el repositorio oficial. No incluyas código malicioso, no accedas a permisos innecesarios y documenta tu plugin correctamente.
+  </div>
+</section>
+
+<!-- 10. Descarga -->
+<section id="descarga">
+  <h2><i data-lucide="download-cloud" style="width:24px;height:24px;vertical-align:middle;margin-right:6px"></i>Descarga del SDK</h2>
+  <p>El SDK completo en un solo archivo JavaScript. Copia, descarga e inclúyelo en tu plugin.</p>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="downloadSDK()"><i data-lucide="download" style="width:16px;height:16px"></i> Descargar libre-codigo-sdk.js</button>
+  </div>
+
+  <div class="code-block" style="margin-top:20px">
+    <div class="code-header"><span class="code-lang">JavaScript — libre-codigo-sdk.js</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><code id="sdkSourceCode">/**
+ * Libre Código Plugin SDK v0.1.0-alpha
+ * API completa para la extensión de Libre Código IDE
+ * https://librecodigo.org
+ *
+ * Uso:
+ *   &lt;script src="libre-codigo-sdk.js"&gt;&lt;/script&gt;
+ *   // Luego accede a la API via globalThis.LibreCodigo
+ */
+(function (global) {
+  'use strict';
+
+  const VERSION = '0.1.0-alpha';
+
+  /* ─── State ─────────────────────────────────────────────── */
+
+  const _events = Object.create(null);
+  const _commands = Object.create(null);
+  const _panels = Object.create(null);
+  const _blocks = [];
+  const _themes = Object.create(null);
+  let _idCounter = 0;
+
+  /* ─── Helpers ───────────────────────────────────────────── */
+
+  function _uid() { return '_sdk_' + (++_idCounter); }
+
+  function _on(event, callback) {
+    if (!_events[event]) _events[event] = [];
+    _events[event].push(callback);
+    return {
+      dispose: function () {
+        const idx = _events[event].indexOf(callback);
+        if (idx !== -1) _events[event].splice(idx, 1);
       }
     };
-    update();
-    libre_codigo.<span class="tok-fn">onEvent</span>(<span class="tok-str">'change'</span>, update);
   }
-});
 
-console.<span class="tok-fn">log</span>(<span class="tok-str">'[json-formatter] Plugin cargado'</span>);</code></pre>
-      </div>
-    </section>
+  function _emit(event, data) {
+    const listeners = _events[event];
+    if (!listeners) return;
+    for (let i = 0; i &lt; listeners.length; i++) {
+      try { listeners[i](data); } catch (e) { console.error('[SDK] Event error:', e); }
+    }
+  }
 
-    <!-- Publicación -->
-    <section class="section" id="publicacion">
-      <h2>Publicación</h2>
-      <p>Una vez que tu plugin esté listo, puedes publicarlo en el foro de plugins de Libre Código para que otros usuarios lo instalen.</p>
-      <ol class="steps">
-        <li>
-          <h4>Verifica tu plugin</h4>
-          <p>Ejecuta <code>lc-plugin validate</code> para comprobar que tu plugin cumple todos los requisitos del SDK.</p>
-        </li>
-        <li>
-          <h4>Genera el paquete</h4>
-          <p>Ejecuta <code>lc-plugin build</code> para crear un archivo <code>.lcplugin</code> listo para distribuir.</p>
-        </li>
-        <li>
-          <h4>Sube al foro</h4>
-          <p>Crea un nuevo post en la sección <strong>Plugins</strong> del foro de Libre Código. Incluye: nombre, descripción, capturas y el archivo <code>.lcplugin</code>.</p>
-        </li>
-        <li>
-          <h4>Mantenimiento</h4>
-          <p>Responde a los usuarios, corrige bugs y actualiza la versión según el feedback recibido.</p>
-        </li>
-      </ol>
-      <div class="info-box warning">
-        <i data-lucide="alert-triangle"></i>
-        <div>Asegúrate de no incluir datos sensibles ni claves API en tu plugin. Todos los plugins son revisados antes de ser publicados.</div>
-      </div>
-    </section>
+  function _assertStr(v, name) {
+    if (typeof v !== 'string' || v.trim() === '') {
+      throw new Error('[SDK] ' + name + ' must be a non-empty string');
+    }
+  }
 
-    <!-- FAQ -->
-    <section class="section" id="faq">
-      <h2>Preguntas Frecuentes</h2>
+  function _assertFn(v, name) {
+    if (typeof v !== 'function') {
+      throw new Error('[SDK] ' + name + ' must be a function');
+    }
+  }
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Puedo usar TypeScript en mi plugin?<i data-lucide="chevron-down"></i></div>
-        <div class="faq-a">Sí. Puedes escribir tu plugin en TypeScript y usar <code>lc-plugin build</code> para compilarlo a JavaScript. Asegúrate de incluir un <code>tsconfig.json</code> en la raíz de tu proyecto.</div>
-      </div>
+  /* ─── Mock / Bridge APIs ────────────────────────────────── */
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Cuál es el tamaño máximo de un plugin?<i data-lucide="chevron-down"></i></div>
-        <div class="faq-a">El tamaño máximo recomendado es de <strong>2 MB</strong> para el archivo <code>.lcplugin</code>. Si necesitas incluir assets grandes, considera cargarlos bajo demanda desde una URL.</div>
-      </div>
+  function _getMonaco() {
+    if (global.monaco) return global.monaco;
+    if (global.editor &amp;&amp; typeof global.editor.getValue === 'function') return global.editor;
+    console.warn('[SDK] Monaco editor not found. Returning mock.');
+    return {
+      getValue: function () { return ''; },
+      setValue: function () {},
+      getModel: function () {
+        return { getValue: function () { return ''; }, setValue: function () {} };
+      },
+      updateOptions: function () {}
+    };
+  }
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Los plugins tienen acceso al sistema de archivos?<i data-lucide="chevron-down"></i></div>
-        <div class="faq-a">Solo si declaras el permiso <code>"fs"</code> en tu <code>manifest.json</code>. El acceso está restringido a la carpeta del proyecto actual. No se permite acceso a rutas del sistema.</div>
-      </div>
+  function _getFs() {
+    if (global.LibreCodigo &amp;&amp; global.LibreCodigo.__fs) return global.LibreCodigo.__fs;
+    console.warn('[SDK] Filesystem bridge not available.');
+    return {
+      readFile: function () { return Promise.resolve(''); },
+      writeFile: function () { return Promise.resolve(); },
+      createFile: function () { return Promise.resolve(); },
+      deleteFile: function () { return Promise.resolve(); },
+      listFiles: function () { return Promise.resolve([]); }
+    };
+  }
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Puedo registrar múltiples comandos?<i data-lucide="chevron-down"></i></div>
-        <div class="faq-a">Sí. No hay límite en el número de comandos que puedes registrar. Cada comando debe tener un nombre único con formato <code>plugin:comando</code>.</div>
-      </div>
+  function _shellExec(cmd) {
+    if (global.LibreCodigo &amp;&amp; typeof global.LibreCodigo.__exec === 'function') {
+      return global.LibreCodigo.__exec(cmd);
+    }
+    console.warn('[SDK] Shell execution not available.');
+    return Promise.resolve({ stdout: '', stderr: 'Not supported', exitCode: 1 });
+  }
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Cómo depuro mi plugin?<i data-lucide="chevron-down"></i></div>
-        <div class="faq-a">Ejecuta <code>lc-plugin dev</code> para iniciar el modo desarrollo. Esto abre el editor con tu plugin cargado y habilita el inspector de plugins (F12) para ver logs y errores en tiempo real.</div>
-      </div>
+  /* ─── SDK Public API ────────────────────────────────────── */
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Puedo dependeer de otros plugins?<i data-lucide="chevron-down"></i></div>
-        <div class="faq-a">Sí. Declara las dependencias en <code>manifest.json</code> bajo el campo <code>dependencies</code>. El SDK se encargará de verificar que estén instalados antes de cargar tu plugin.</div>
-      </div>
-    </section>
+  const SDK = {
+    version: VERSION,
 
+    /* ── Registration ── */
+
+    registerCommand: function (id, options) {
+      _assertStr(id, 'command id');
+      if (!options || typeof options !== 'object') {
+        throw new Error('[SDK] Command options must be an object');
+      }
+      _assertStr(options.label, 'command label');
+      _assertFn(options.callback, 'command callback');
+      _commands[id] = {
+        id: id,
+        label: options.label,
+        category: options.category || 'General',
+        callback: options.callback,
+        enabled: true
+      };
+      _emit('command-registered', { id: id });
+      return _commands[id];
+    },
+
+    registerPanel: function (id, options) {
+      _assertStr(id, 'panel id');
+      if (!options || typeof options !== 'object') {
+        throw new Error('[SDK] Panel options must be an object');
+      }
+      _assertStr(options.title, 'panel title');
+      _assertFn(options.render, 'panel render');
+      _panels[id] = {
+        id: id,
+        title: options.title,
+        icon: options.icon || 'layout',
+        render: options.render
+      };
+      _emit('panel-registered', { id: id });
+      return _panels[id];
+    },
+
+    registerBlock: function (definition) {
+      if (!definition || typeof definition !== 'object') {
+        throw new Error('[SDK] Block definition must be an object');
+      }
+      _assertStr(definition.id, 'block id');
+      _assertStr(definition.label, 'block label');
+      _blocks.push(Object.assign({ category: 'general', shape: 'stack', color: '#C96B4B', ports: [] }, definition));
+      _emit('block-registered', { id: definition.id });
+    },
+
+    registerTheme: function (name, theme) {
+      _assertStr(name, 'theme name');
+      if (!theme || typeof theme !== 'object') {
+        throw new Error('[SDK] Theme must be an object');
+      }
+      _themes[name] = theme;
+      _emit('theme-registered', { name: name });
+    },
+
+    /* ── Editor ── */
+
+    getEditor: function () { return _getMonaco(); },
+
+    getLanguage: function () {
+      const m = _getMonaco();
+      if (m.getModel &amp;&amp; m.getModel()) {
+        const lang = m.getModel().getLanguageId ? m.getModel().getLanguageId() : 'unknown';
+        return lang;
+      }
+      return 'plaintext';
+    },
+
+    setLanguage: function (lang) {
+      _assertStr(lang, 'language');
+      const m = _getMonaco();
+      if (m.setModelLanguage) m.setModelLanguage(m.getModel(), lang);
+      _emit('language-change', { language: lang });
+    },
+
+    getTheme: function () {
+      const m = _getMonaco();
+      if (m.getOption) {
+        const t = m.getOption(42);
+        return t || 'vs-dark';
+      }
+      return 'vs-dark';
+    },
+
+    getActiveFile: function () {
+      if (global.LibreCodigo &amp;&amp; global.LibreCodigo.__activeFile) {
+        return global.LibreCodigo.__activeFile;
+      }
+      return null;
+    },
+
+    openFile: function (path) {
+      _assertStr(path, 'file path');
+      _emit('file-open', { path: path });
+    },
+
+    /* ── Filesystem ── */
+
+    getFilesystem: function () { return _getFs(); },
+
+    readFile: function (path) {
+      _assertStr(path, 'file path');
+      return _getFs().readFile(path);
+    },
+
+    writeFile: function (path, content) {
+      _assertStr(path, 'file path');
+      if (typeof content !== 'string') throw new Error('[SDK] content must be a string');
+      return _getFs().writeFile(path, content);
+    },
+
+    createFile: function (path) {
+      _assertStr(path, 'file path');
+      return _getFs().createFile(path);
+    },
+
+    deleteFile: function (path) {
+      _assertStr(path, 'file path');
+      return _getFs().deleteFile(path);
+    },
+
+    listFiles: function (dir) {
+      _assertStr(dir, 'directory path');
+      return _getFs().listFiles(dir);
+    },
+
+    /* ── Events ── */
+
+    onEvent: function (event, callback) {
+      _assertStr(event, 'event name');
+      _assertFn(callback, 'event callback');
+      return _on(event, callback);
+    },
+
+    emitEvent: function (event, data) {
+      _assertStr(event, 'event name');
+      _emit(event, data);
+    },
+
+    /* ── UI ── */
+
+    showNotification: function (message, type) {
+      _assertStr(message, 'notification message');
+      var validTypes = ['info', 'warning', 'error', 'success'];
+      if (type &amp;&amp; validTypes.indexOf(type) === -1) {
+        console.warn('[SDK] Invalid notification type. Using "info".');
+        type = 'info';
+      }
+      _emit('notification', { message: message, type: type || 'info' });
+      if (global.LibreCodigo &amp;&amp; typeof global.LibreCodigo.__notify === 'function') {
+        global.LibreCodigo.__notify(message, type || 'info');
+      } else {
+        console.log('[SDK:' + (type || 'info') + '] ' + message);
+      }
+    },
+
+    showInputBox: function (options) {
+      var opts = options || {};
+      if (global.LibreCodigo &amp;&amp; typeof global.LibreCodigo.__inputBox === 'function') {
+        return global.LibreCodigo.__inputBox(opts);
+      }
+      var result = prompt(opts.prompt || 'Input:', opts.default || '');
+      return Promise.resolve(result);
+    },
+
+    showQuickPick: function (items) {
+      if (!Array.isArray(items) || items.length === 0) {
+        return Promise.resolve(null);
+      }
+      if (global.LibreCodigo &amp;&amp; typeof global.LibreCodigo.__quickPick === 'function') {
+        return global.LibreCodigo.__quickPick(items);
+      }
+      var labels = items.map(function (item) {
+        return typeof item === 'string' ? item : (item.label || item);
+      });
+      var choice = prompt(
+        'Choose:\n' + labels.map(function (l, i) { return (i + 1) + '. ' + l; }).join('\n') +
+        '\n\nEnter number:'
+      );
+      var idx = parseInt(choice, 10) - 1;
+      return Promise.resolve(idx &gt;= 0 &amp;&amp; idx &lt; items.length ? labels[idx] : null);
+    },
+
+    getConfiguration: function () {
+      if (global.LibreCodigo &amp;&amp; global.LibreCodigo.__config) {
+        return Object.assign({}, global.LibreCodigo.__config);
+      }
+      return { theme: 'vs-dark', fontSize: 14, tabSize: 2 };
+    },
+
+    /* ── System ── */
+
+    executeCommand: function (cmd) {
+      _assertStr(cmd, 'command');
+      return _shellExec(cmd);
+    },
+
+    /* ── Internals ── */
+
+    _commands: _commands,
+    _panels: _panels,
+    _blocks: _blocks,
+    _themes: _themes,
+
+    getRegisteredCommands: function () {
+      return Object.keys(_commands).map(function (k) { return _commands[k]; });
+    },
+
+    getRegisteredPanels: function () {
+      return Object.keys(_panels).map(function (k) { return _panels[k]; });
+    },
+
+    getRegisteredBlocks: function () {
+      return _blocks.slice();
+    },
+
+    getRegisteredThemes: function () {
+      return Object.keys(_themes).map(function (k) { return { name: k, theme: _themes[k] }; });
+    },
+
+    unregisterCommand: function (id) {
+      if (_commands[id]) { delete _commands[id]; _emit('command-unregistered', { id: id }); }
+    },
+
+    unregisterPanel: function (id) {
+      if (_panels[id]) { delete _panels[id]; _emit('panel-unregistered', { id: id }); }
+    }
+  };
+
+  /* ─── Bootstrap ─────────────────────────────────────────── */
+
+  global.LibreCodigo = SDK;
+
+  _emit('sdk-loaded', { version: VERSION });
+
+})(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this);</code></pre>
   </div>
-</main>
+</section>
+
+</div>
+</div>
 
 <script>
+/* Lucide icons */
 lucide.createIcons();
 
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.querySelector('.mobile-overlay').classList.toggle('show');
-}
-
-function copyCode(btn){
-  const pre = btn.closest('.code-block').querySelector('pre');
-  const text = pre.textContent || pre.innerText;
-  navigator.clipboard.writeText(text).then(()=>{
-    btn.classList.add('copied');
-    btn.innerHTML = '<i data-lucide="check"></i> Copiado';
-    lucide.createIcons();
-    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='<i data-lucide="clipboard"></i> Copiar';lucide.createIcons();},2000);
+/* Sidebar scroll-spy */
+(function(){
+  var nav=document.getElementById('sidebarNav');
+  var links=nav.querySelectorAll('a');
+  var sections=[];
+  links.forEach(function(a){
+    var id=a.getAttribute('href').slice(1);
+    var el=document.getElementById(id);
+    if(el) sections.push({el:el,link:a});
   });
-}
-
-function toggleFaq(el){
-  el.closest('.faq-item').classList.toggle('open');
-}
-
-// Active nav on scroll
-const sections = document.querySelectorAll('.section, .hero');
-const navLinks = document.querySelectorAll('#sidebar-nav a');
-const observer = new IntersectionObserver((entries)=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      const id = entry.target.getAttribute('id');
-      navLinks.forEach(link=>{
-        link.classList.toggle('active', link.getAttribute('href')==='#'+id);
-      });
+  function update(){
+    var scrollY=window.scrollY+120;
+    var current=sections[0];
+    for(var i=0;i&lt;sections.length;i++){
+      if(sections[i].el.offsetTop<=scrollY) current=sections[i];
     }
-  });
-},{rootMargin:'-80px 0px -60% 0px',threshold:0});
-sections.forEach(s=>observer.observe(s));
-
-// Close sidebar on mobile when clicking nav
-navLinks.forEach(link=>link.addEventListener('click',()=>{
-  if(window.innerWidth<=900){
-    document.getElementById('sidebar').classList.remove('open');
-    document.querySelector('.mobile-overlay').classList.remove('show');
+    links.forEach(function(l){l.classList.remove('active')});
+    if(current) current.link.classList.add('active');
   }
-}));
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+
+  /* Close sidebar on link click (mobile) */
+  links.forEach(function(a){
+    a.addEventListener('click',function(){
+      document.getElementById('sidebar').classList.remove('open');
+    });
+  });
+})();
+
+/* Copy code */
+function copyCode(btn){
+  var pre=btn.closest('.code-block').querySelector('pre');
+  var code=pre.textContent;
+  navigator.clipboard.writeText(code).then(function(){
+    btn.textContent='Copiado!';
+    setTimeout(function(){btn.textContent='Copiar'},1500);
+  });
+}
+
+/* Download SDK */
+function downloadSDK(){
+  var code=document.getElementById('sdkSourceCode').textContent;
+  var blob=new Blob([code],{type:'application/javascript'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='libre-codigo-sdk.js';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
